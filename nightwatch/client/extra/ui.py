@@ -7,10 +7,13 @@ from datetime import datetime
 from types import FunctionType
 
 import urwid
+import emoji
 
 from .commands import commands
 from .wswrap import ORJSONWebSocket
 from ..vendor.scroll import Scrollable, ScrollBar
+
+from nightwatch.config import config
 
 # Input edit class
 class InputEdit(urwid.Edit):
@@ -50,7 +53,7 @@ class NightwatchUI():
 
     def send_message(self, text: str) -> None:
         if text[0] == "/":
-            splices = shlex.split(text)
+            splices = shlex.split(text.replace("\\", "\\\\"))
             if splices[0][1:] in self.commands:
                 response = self.commands[splices[0][1:]].on_execute(splices[1:])
                 if response is None:
@@ -64,7 +67,7 @@ class NightwatchUI():
         visible_author = author if author != self.last_author else " " * self.length(author)
         now, time_string = datetime.now(), ""
         if (author != self.last_author) or ((now - self.last_time).total_seconds() > 300):
-            time_string = now.strftime("%I:%M %p") + "  "  # Right padding for the scrollbar
+            time_string = now.strftime("%I:%M %p" if config["client.time_format"] != "24h" else "%H:%M") + "  "  # Right padding for the scrollbar
 
         self.pile.contents.append((urwid.Columns([
             (self.length(visible_author), urwid.Text((user_color, visible_author))),
@@ -75,7 +78,7 @@ class NightwatchUI():
         self.last_author, self.last_time = author, now
 
     def add_message(self, author: str, content: str, user_color: str = "gray") -> None:
-        self.construct_message(author, content, user_color)
+        self.construct_message(author, emoji.emojize(content), user_color)
 
         # Scroll to the end (if we haven't manually moved)
         if len(self.pile.contents) > 50:

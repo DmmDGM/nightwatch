@@ -34,8 +34,9 @@ class ConfigCommand(BaseCommand):
                 "Usage: /config <key> <value>",
                 "",
                 "Example usage:",
-                "/config colors.time yellow",
-                "/config prompt \">> \"",
+                "  /config colors.time yellow",
+                "  /config prompt \">> \"",
+                "  /config client.time_format 24h",
                 "",
                 "Some changes will only apply after Nightwatch restarts."
             ]:

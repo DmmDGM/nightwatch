@@ -30,7 +30,8 @@ dependencies = [
     "urwid",
     "orjson",
     "nanoid",
-    "websockets"
+    "websockets",
+    "emoji"
 ]
 
 [project.optional-dependencies]

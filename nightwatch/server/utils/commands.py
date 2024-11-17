@@ -95,6 +95,10 @@ async def command_admin(state, client: NightwatchClient, data: models.AdminModel
                         }).decode())
                         await client_object.close()
                         admin_module.add_ban(client_object.ip, username)
+                        websockets.broadcast(state.clients, orjson.dumps({
+                            "type": "message",
+                            "data": {"text": f"{username} has been banned by {client.user_data['name']}.", "user": Constant.SERVER_USER}
+                        }).decode())
                         return await client.send("admin", success = True)
 
                 await client.send("admin", success = False, error = "Specified username couldn't be found.")
