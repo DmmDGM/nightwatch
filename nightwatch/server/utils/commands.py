@@ -48,7 +48,7 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
     client.set_user_data(data.model_dump())
     client.identified = True
 
-    log.info("ws", f"Client '{data.name}' has identified.")
+    log.info(client.id, f"Client has identified as '{data.name}'.")
 
     await client.send("server", name = Constant.SERVER_NAME, online = len(state.clients))
     websockets.broadcast(state.clients, orjson.dumps({

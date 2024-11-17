@@ -27,10 +27,10 @@ state = NightwatchStateManager()
 
 # Socket entrypoint
 async def connection(websocket: WebSocketCommonProtocol) -> None:
-    log.info("ws", "Client connected.")
-
+    client = NightwatchClient(state, websocket)
     try:
-        client = NightwatchClient(state, websocket)
+        log.info(client.id, "Client connected!")
+
         async for message in websocket:
             message = orjson.loads(message)
             if message.get("type") not in registry.commands:
@@ -53,9 +53,9 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
                     await client.send("error", text = str(error))
 
     except orjson.JSONDecodeError:
-        log.warn("ws", "Failed to decode JSON from client.")
+        log.warn(client.id, "Failed to decode JSON from client.")
 
     except ConnectionClosedError:
-        log.info("ws", "Client disconnected.")
+        log.info(client.id, "Client disconnected!")
     
     state.remove_client(websocket)

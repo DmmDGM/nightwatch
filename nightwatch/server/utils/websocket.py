@@ -1,10 +1,13 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import random
 from typing import Any
 
 import orjson
 from websockets import WebSocketCommonProtocol
+
+CLIENT_ID_CHARSET = "abcdefg1234567890"
 
 class NightwatchClient():
     """This class acts as a wrapper on top of WebSocketCommonProtocol that implements
@@ -15,6 +18,8 @@ class NightwatchClient():
 
         self.state = state
         self.state.add_client(client)
+
+        self.id = "".join(random.choice(CLIENT_ID_CHARSET) for _ in range(6))
 
     async def send(self, message_type: str, **message_data) -> None:
         payload = {"type": message_type, "data": message_data}
