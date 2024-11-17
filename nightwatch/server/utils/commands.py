@@ -9,6 +9,7 @@ import websockets
 from . import models
 from .websocket import NightwatchClient
 
+from nightwatch.logging import log
 from nightwatch.config import config
 
 # Constants
@@ -46,6 +47,8 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
 
     client.set_user_data(data.model_dump())
     client.identified = True
+
+    log.info("ws", f"Client '{data.name}' has identified.")
 
     await client.send("server", name = Constant.SERVER_NAME, online = len(state.clients))
     websockets.broadcast(state.clients, orjson.dumps({

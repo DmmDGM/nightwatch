@@ -27,6 +27,8 @@ state = NightwatchStateManager()
 
 # Socket entrypoint
 async def connection(websocket: WebSocketCommonProtocol) -> None:
+    log.info("ws", "Client connected.")
+
     try:
         client = NightwatchClient(state, websocket)
         async for message in websocket:
