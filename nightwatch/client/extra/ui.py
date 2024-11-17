@@ -107,6 +107,9 @@ class NightwatchUI():
                 # Push message to screen
                 self.add_message(user["name"], data["text"], color_code)
 
+            case "error":
+                exit(f"Nightwatch Exception\n{'=' * 50}\n\n{data['text']}")
+
     def on_ready(self, loop: urwid.MainLoop, payload: dict) -> None:
         self.loop = loop
         self.construct_message("Nightwatch", f"Welcome to {payload['name']}. There are {payload['online']} user(s) online.")

@@ -1,6 +1,7 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import random
 from typing import Callable
 
 import orjson
@@ -8,6 +9,7 @@ import websockets
 
 from . import models
 from .websocket import NightwatchClient
+from .modules.admin import admin_module
 
 from nightwatch.logging import log
 from nightwatch.config import config
@@ -16,6 +18,7 @@ from nightwatch.config import config
 class Constant:
     SERVER_USER: dict[str, str] = {"name": "Nightwatch", "color": "gray"}
     SERVER_NAME: str = config["server.name"] or "Untitled Server"
+    ADMIN_CODE: str = str(random.randint(100000, 999999))
 
 # Handle command registration
 class CommandRegistry():
@@ -73,3 +76,65 @@ async def command_members(state, client: NightwatchClient) -> None:
 @registry.command("ping")
 async def command_ping(state, client: NightwatchClient) -> None:
     return await client.send("pong")
+
+# New commands (coming back to this branch)
+@registry.command("admin")
+async def command_admin(state, client: NightwatchClient, data: models.AdminModel) -> None:
+    if not client.identified:
+        return await client.send("error", text = "You cannot enter admin mode while anonymous.")
+
+    # Handle admin commands
+    if client.admin:
+        match data.command:
+            case ["ban", username]:
+                for client_object, client_username in state.clients.items():
+                    if client_username == username:
+                        await client_object.send(orjson.dumps({
+                            "type": "message",
+                            "data": {"text": "You have been banned from this server.", "user": Constant.SERVER_USER}
+                        }).decode())
+                        await client_object.close()
+                        admin_module.add_ban(client_object.ip, username)
+                        return await client.send("admin", success = True)
+
+                await client.send("admin", success = False, error = "Specified username couldn't be found.")
+
+            case ["unban", username]:
+                for ip, client_username in admin_module.banned_users.items():
+                    if client_username == username:
+                        admin_module.unban(ip)
+                        return await client.send("admin", success = True)
+
+                await client.send("admin", success = False, error = "Specified banned user couldn't be found.")
+
+            case ["ip", username]:
+                for client_object, client_username in state.clients.items():
+                    if client_username == username:
+                        return await client.send("admin", success = True, ip = client_object.ip)
+
+                await client.send("admin", success = False, error = "Specified username couldn't be found.")
+
+            case ["banlist"]:
+                await client.send("admin", banlist = admin_module.banned_users)
+
+            case ["say", message]:
+                websockets.broadcast(state.clients, orjson.dumps({
+                    "type": "message",
+                    "data": {"text": message, "user": Constant.SERVER_USER}
+                }).decode())
+
+            case _:
+                await client.send("error", text = "Invalid admin command sent, your client might be outdated.")
+
+        return
+
+    # Handle becoming admin
+    if data.code is None:
+        return log.info("admin", f"Admin code is {Constant.ADMIN_CODE}")
+
+    if data.code != Constant.ADMIN_CODE:
+        return await client.send("admin", success = False)
+
+    client.admin = True
+    log.info("admin", f"{client.user_data['name']} ({client.id}) is now an administrator.")
+    return await client.send("admin", success = True)

@@ -14,7 +14,7 @@ class NightwatchClient():
     data serialization through orjson."""
     def __init__(self, state, client: WebSocketCommonProtocol) -> None:
         self.client = client
-        self.identified, self.callback = False, None
+        self.admin, self.identified, self.callback = False, False, None
 
         self.state = state
         self.state.add_client(client)

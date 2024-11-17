@@ -4,10 +4,11 @@
 import orjson
 from pydantic import ValidationError
 from websockets import WebSocketCommonProtocol
-from websockets.exceptions import ConnectionClosedError
+from websockets.exceptions import ConnectionClosed
 
 from .utils.commands import registry
 from .utils.websocket import NightwatchClient
+from .utils.modules.admin import admin_module
 
 from nightwatch.logging import log
 
@@ -18,6 +19,7 @@ class NightwatchStateManager():
 
     def add_client(self, client: WebSocketCommonProtocol) -> None:
         self.clients[client] = None
+        setattr(client, "ip", client.request_headers.get("CF-Connecting-IP", client.remote_address[0]))
 
     def remove_client(self, client: WebSocketCommonProtocol) -> None:
         if client in self.clients:
@@ -28,11 +30,18 @@ state = NightwatchStateManager()
 # Socket entrypoint
 async def connection(websocket: WebSocketCommonProtocol) -> None:
     client = NightwatchClient(state, websocket)
+    if websocket.ip in admin_module.banned_users:  # type: ignore
+        return await client.send("error", text = "You have been banned from this server.")
+
     try:
         log.info(client.id, "Client connected!")
 
         async for message in websocket:
             message = orjson.loads(message)
+            if not isinstance(message, dict):
+                await client.send("error", text = "Expected payload is an object.")
+                continue
+
             if message.get("type") not in registry.commands:
                 await client.send("error", text = "Specified command type does not exist or is missing.")
                 continue
@@ -55,7 +64,7 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
     except orjson.JSONDecodeError:
         log.warn(client.id, "Failed to decode JSON from client.")
 
-    except ConnectionClosedError:
+    except ConnectionClosed:
         log.info(client.id, "Client disconnected!")
     
     state.remove_client(websocket)

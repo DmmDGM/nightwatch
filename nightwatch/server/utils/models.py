@@ -1,7 +1,7 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
-from typing import Annotated
+from typing import Annotated, Optional
 from pydantic import BaseModel, PlainSerializer, StringConstraints
 from pydantic_extra_types.color import Color
 
@@ -12,3 +12,7 @@ class IdentifyModel(BaseModel):
 
 class MessageModel(BaseModel):
     text: Annotated[str, StringConstraints(min_length = 1, max_length = 300)]
+
+class AdminModel(BaseModel):
+    code: Optional[str] = None
+    command: Optional[list[str]] = None
