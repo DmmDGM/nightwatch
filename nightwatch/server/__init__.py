@@ -50,7 +50,7 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
                     await command(state, client, payload_type(**(message.get("data") or {})))
 
                 except ValidationError as error:
-                    await client.send("error", text = error)
+                    await client.send("error", text = str(error))
 
     except orjson.JSONDecodeError:
         log.warn("ws", "Failed to decode JSON from client.")

@@ -2,6 +2,8 @@
 
 # Modules
 import os
+import re
+import typing
 from time import sleep
 from threading import Thread
 
@@ -17,6 +19,8 @@ from .extra.select import menu
 from .extra.wswrap import ORJSONWebSocket
 
 # Initialization
+HEX_COLOR = re.compile(r"^[A-Fa-f0-9]{6}$")
+
 if os.name == "nt":
     urwid.set_encoding("utf-8")
 
@@ -28,7 +32,7 @@ def connect_loop(host: str, port: int, username: str) -> None:
             ws = ORJSONWebSocket(ws)
 
             # Handle identification payload
-            ws.send({"type": "identify", "data": {"name": username, "color": config["user.color"]}})
+            ws.send({"type": "identify", "data": {"name": username, "color": f"#{config['client.color']}"}})
             response = ws.recv()
             if response["type"] == "error":
                 exit(f"\nCould not connect to {destination}. Additional details:\n{response['data']['text']}")
@@ -79,25 +83,44 @@ def connect_loop(host: str, port: int, username: str) -> None:
 
 # Entrypoint
 def start_client(
-    address: str = None,
-    username: str = None
+    address: typing.Optional[str] = None,
+    username: typing.Optional[str] = None
 ):
-    username = username or config["user.name"]
+    username = username or config["client.username"]
 
     # Start main UI
     print(f"\033[H\033[2J✨ Nightwatch | v{__version__}\n")
     if username is None:
         print("Hello! It seems that this is your first time using Nightwatch.")
         print("Before you can connect to a server, please set your desired username.\n")
-        config.set("user.name", input("Username: "))
+
+        username = input("Username: ")
+        config.set("client.username", username)
         print("\033[4A\033[0J", end = "")  # Reset back up to the Nightwatch label
+
+    # Handle color setup
+    color = config["client.color"] or ""
+    if not re.match(HEX_COLOR, color):
+        while True:
+            print("For fun, you can select a color for your username.")
+            print("Please enter the HEX code (6 long) you would like to have as your color.")
+            color = (input("> #") or "ffffff").lstrip("#")
+
+            # Validate their color choice
+            if re.match(HEX_COLOR, color):
+                break
+
+            print("\033[3A\033[0J", end = "")
+
+        print("\033[3A\033[0J", end = "")
+        config.set("client.color", color)
 
     # Handle server address
     if address is None:
-        servers = config["servers"]
+        servers = config["client.servers"]
         if servers is None:
             servers = ["nightwatch.iipython.dev"]
-            config.set("servers", servers)
+            config.set("client.servers", servers)
 
         print(f"Hello, {username}. Please select a Nightwatch server to connect to:")
         address = menu.show(servers)
@@ -114,7 +137,7 @@ def start_client(
 
     # Connect to server
     try:
-        connect_loop(host, port, username)
+        connect_loop(host, int(port), username)
 
     except KeyboardInterrupt:
         print("\033[5A\033[0J", end = "")  # Reset back up to the Nightwatch label
