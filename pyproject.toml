@@ -6,9 +6,6 @@ build-backend = "hatchling.build"
 packages = ["nightwatch"]
 exclude = ["nightwatch/desktop"]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [tool.hatch.version]
 path = "nightwatch/__init__.py"
 
@@ -27,23 +24,23 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "urwid",
-    "orjson",
-    "nanoid",
-    "websockets",
-    "emoji"
+    "emoji>=2.14.0",
+    "nanoid>=2.0.0",
+    "orjson>=3.10.11",
+    "urwid>=2.6.16",
+    "websockets>=14.1",
 ]
 
 [project.optional-dependencies]
 serve = [
-    "fastapi",
-    "pymongo",
-    "pydantic",
-    "pydantic-extra-types",
-    "starlette",
-    "argon2-cffi",
-    "redis[hiredis]",
-    "uvicorn[standard]"
+    "argon2-cffi>=23.1.0",
+    "fastapi>=0.115.5",
+    "pydantic>=2.9.2",
+    "pydantic-extra-types>=2.10.0",
+    "pymongo>=4.10.1",
+    "redis[hiredis]>=5.2.0",
+    "starlette>=0.41.2",
+    "uvicorn[standard]>=0.32.0",
 ]
 
 [project.urls]

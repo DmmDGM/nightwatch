@@ -4,7 +4,7 @@
 import os
 import asyncio
 
-from websockets.server import serve
+from websockets.asyncio.server import serve
 
 from . import connection
 

@@ -20,7 +20,7 @@ class NightwatchStateManager():
 
     def add_client(self, client: WebSocketCommonProtocol) -> None:
         self.clients[client] = None
-        setattr(client, "ip", client.request_headers.get("CF-Connecting-IP", client.remote_address[0]))
+        setattr(client, "ip", client.request.headers.get("CF-Connecting-IP", client.remote_address[0]))
 
     def remove_client(self, client: WebSocketCommonProtocol) -> None:
         if client in self.clients:
