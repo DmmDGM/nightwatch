@@ -20,18 +20,15 @@ class MessageEvent:
     message: str
 
 @dataclass
-class KeypressEvent:
-    text: str
-
-@dataclass
 class ScreenEvent:
     event_type: typing.Literal["message", "keypress", "shutdown"]
-    event_data: MessageEvent | KeypressEvent | None
+    event_data: MessageEvent | None
 
 # Handle screen
 class Screen:
     def __init__(self) -> None:
         self.queue = Queue()
+        self.input_buffer = ""
 
     def queue_event(self, event: ScreenEvent) -> None:
         self.queue.put_nowait(event)
@@ -58,7 +55,10 @@ class Screen:
                     else:
                         r, g, b = 255, 255, 255
 
-                    print(f"\033[38;2;{r};{g};{b}m{name}\033[0m: {event.event_data.message}")
+                    print(f"\033[2K\r\033[38;2;{r};{g};{b}m{name}\033[0m: {event.event_data.message}\n> {self.input_buffer}", end = "")
+
+                case "keypress":
+                    print(f"\033[2K\r> {self.input_buffer}", end = "")
 
                 case "shutdown":
                     return
