@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from websockets import WebSocketCommonProtocol
 from websockets.exceptions import ConnectionClosed
 
-from .utils.commands import registry
+from .utils.commands import registry, broadcast, Constant
 from .utils.websocket import NightwatchClient
 from .utils.modules.admin import admin_module
 
@@ -16,6 +16,7 @@ from nightwatch.logging import log
 class NightwatchStateManager():
     def __init__(self) -> None:
         self.clients = {}
+        self.chat_history = []
 
     def add_client(self, client: WebSocketCommonProtocol) -> None:
         self.clients[client] = None
@@ -66,5 +67,7 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
 
     except ConnectionClosed:
         log.info(client.id, "Client disconnected!")
-    
+        if client.identified:
+            broadcast(state, "message", text = f"{client.user_data['name']} left the chatroom.", user = Constant.SERVER_USER)
+            
     state.remove_client(websocket)

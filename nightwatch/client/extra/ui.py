@@ -53,13 +53,17 @@ class NightwatchUI():
 
     def send_message(self, text: str) -> None:
         if text[0] == "/":
-            splices = shlex.split(text.replace("\\", "\\\\"))
-            if splices[0][1:] in self.commands:
-                response = self.commands[splices[0][1:]].on_execute(splices[1:])
-                if response is None:
-                    return  # Internal command, do not send in chat lmao
+            try:
+                splices = shlex.split(text.replace("\\", "\\\\"))
+                if splices[0][1:] in self.commands:
+                    response = self.commands[splices[0][1:]].on_execute(splices[1:])
+                    if response is None:
+                        return  # Internal command, do not send in chat lmao
 
-                text = response
+                    text = response
+
+            except ValueError:
+                pass
 
         self.websocket.send({"type": "message", "data": {"text": text}})
 

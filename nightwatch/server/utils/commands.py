@@ -36,6 +36,15 @@ class CommandRegistry():
 
 registry = CommandRegistry()
 
+# Handle broadcasting
+def broadcast(state, type: str, **data) -> None:
+    websockets.broadcast(state.clients, orjson.dumps({
+        "type": type,
+        "data": data
+    }).decode())
+    if type == "message":
+        state.chat_history.append(data)
+
 # Setup commands
 @registry.command("identify")
 async def command_identify(state, client: NightwatchClient, data: models.IdentifyModel) -> None:
@@ -54,20 +63,18 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
     log.info(client.id, f"Client has identified as '{data.name}'.")
 
     await client.send("server", name = Constant.SERVER_NAME, online = len(state.clients))
-    websockets.broadcast(state.clients, orjson.dumps({
-        "type": "message",
-        "data": {"text": f"{data.name} joined the chatroom.", "user": Constant.SERVER_USER}
-    }).decode())
+    broadcast(state, "message", text = f"{data.name} joined the chatroom.", user = Constant.SERVER_USER)
+
+    # Send the chat history
+    for message in state.chat_history:
+        await client.send("message", **message)
 
 @registry.command("message")
 async def command_message(state, client: NightwatchClient, data: models.MessageModel) -> None:
     if not client.identified:
         return await client.send("error", text = "You must identify before sending a message.")
 
-    websockets.broadcast(state.clients, orjson.dumps({
-        "type": "message",
-        "data": {"text": data.text, "user": client.user_data}
-    }).decode())
+    broadcast(state, "message", text = data.text, user = client.user_data)
 
 @registry.command("members")
 async def command_members(state, client: NightwatchClient) -> None:
@@ -95,10 +102,7 @@ async def command_admin(state, client: NightwatchClient, data: models.AdminModel
                         }).decode())
                         await client_object.close()
                         admin_module.add_ban(client_object.ip, username)
-                        websockets.broadcast(state.clients, orjson.dumps({
-                            "type": "message",
-                            "data": {"text": f"{username} has been banned by {client.user_data['name']}.", "user": Constant.SERVER_USER}
-                        }).decode())
+                        broadcast(state, "message", text = f"{username} has been banned by {client.user_data['name']}.", user = Constant.SERVER_USER)
                         return await client.send("admin", success = True)
 
                 await client.send("admin", success = False, error = "Specified username couldn't be found.")
@@ -122,10 +126,7 @@ async def command_admin(state, client: NightwatchClient, data: models.AdminModel
                 await client.send("admin", banlist = admin_module.banned_users)
 
             case ["say", message]:
-                websockets.broadcast(state.clients, orjson.dumps({
-                    "type": "message",
-                    "data": {"text": message, "user": Constant.SERVER_USER}
-                }).decode())
+                broadcast(state, "message", text = message, user = Constant.SERVER_USER)
 
             case _:
                 await client.send("error", text = "Invalid admin command sent, your client might be outdated.")
