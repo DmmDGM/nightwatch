@@ -7,13 +7,18 @@ import typing
 from pathlib import Path
 
 # Initialization
-config_path = Path.home() / ".config/nightwatch/config.json"
-if os.name == "nt":
-    appdata = os.getenv("APPDATA")
-    if appdata is None:
-        exit(r"Nightwatch: %APPDATA% is None, no place available to store configuration at.")
+config_override = os.getenv("CONFIG_OVERRIDE")
+if config_override is None:
+    config_path = Path.home() / ".config/nightwatch/config.json"
+    if os.name == "nt":
+        appdata = os.getenv("APPDATA")
+        if appdata is None:
+            exit(r"Nightwatch: %APPDATA% is None, no place available to store configuration at.")
 
-    config_path = Path(appdata) / "Nightwatch/config.json"
+        config_path = Path(appdata) / "Nightwatch/config.json"
+
+else:
+    config_path = Path(config_override)
 
 config_path.parent.mkdir(exist_ok = True)
 
