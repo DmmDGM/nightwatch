@@ -27,17 +27,40 @@ Here are two of the standard clients for you to choose from:
 
 Running a Nightwatch server can be a bit trickier then running the client, but follow along:
 
-- You'll need either [CPython 3.10 or above](https://python.org/downloads), or **preferably**, [PyPy 3.10](https://www.pypy.org/download.html). 
-- Install the following dependencies: `pypy3 -m pip install ujson socketify`.
-- Launch the server via `pypy3 -m nightwatch.server`.
+```sh
+git clone https://github.com/iiPythonx/nightwatch && cd nightwatch
+git checkout release
+uv venv
+uv pip install -e .
+HOST=0.0.0.0 python3 -m nightwatch.server
+```
 
-For more possible ways to run the server, please refer to the [socketify.py documentation](https://docs.socketify.dev/cli.html).
+An example NGINX configuration:
+
+```conf
+server {
+
+    # SSL
+    listen			    443 ssl;
+    ssl_certificate		/etc/ssl/nightwatch.pem;
+    ssl_certificate_key	/etc/ssl/nightwatch.key;
+
+    # Setup location
+    server_name nightwatch.iipython.dev;
+    location /gateway {
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection upgrade;
+        proxy_pass http://192.168.0.1:8000/gateway;
+        proxy_http_version 1.1;
+    }
+}
+```
 
 # Configuration
 
 Configuration is available at:
 - ***nix systems**: ~/.config/nightwatch/config.json
-- **Windows**: %AppData%\Local\Nightwatch\config.json
+- **Windows**: %LocalAppData%\Nightwatch\config.json
 
-The Nightwatch client currently allows you to store custom colors and username data there.  
-The server currently only uses it for `server.name`. Although that is prone to change.
+The Nightwatch client uses the JSON for username, coloring, and more. Check the `/config` command for more information. 
+The backend chat server uses the config file for the server name, although more is sure to come.
