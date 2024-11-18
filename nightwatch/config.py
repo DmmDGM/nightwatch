@@ -9,18 +9,18 @@ from pathlib import Path
 # Initialization
 config_override = os.getenv("CONFIG_OVERRIDE")
 if config_override is None:
-    config_path = Path.home() / ".config/nightwatch/config.json"
+    config_path = Path.home() / ".config/nightwatch"
     if os.name == "nt":
         appdata = os.getenv("APPDATA")
         if appdata is None:
             exit(r"Nightwatch: %APPDATA% is None, no place available to store configuration at.")
 
-        config_path = Path(appdata) / "Nightwatch/config.json"
+        config_path = Path(appdata) / "Nightwatch"
 
 else:
     config_path = Path(config_override)
 
-config_path.parent.mkdir(exist_ok = True)
+config_path.mkdir(exist_ok = True, parents = True)
 
 # Configuration class
 class Configuration():
@@ -54,4 +54,6 @@ class Configuration():
         self.config = {}
         self.config_path.write_text(json.dumps({}))
 
-config = Configuration(config_path)
+# Modern configuration system
+def fetch_config(config_module: str) -> Configuration:
+    return Configuration(config_path / f"{config_module}.json")

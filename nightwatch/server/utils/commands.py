@@ -1,6 +1,7 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import re
 import random
 from typing import Callable
 
@@ -11,13 +12,13 @@ from . import models
 from .websocket import NightwatchClient
 from .modules.admin import admin_module
 
+from nightwatch.server import config, HEX_COLOR_REGEX
 from nightwatch.logging import log
-from nightwatch.config import config
 
 # Constants
 class Constant:
     SERVER_USER: dict[str, str] = {"name": "Nightwatch", "color": "gray"}
-    SERVER_NAME: str = config["server.name"] or "Untitled Server"
+    SERVER_NAME: str = config["name"] or "Untitled Server"
     ADMIN_CODE: str = str(random.randint(100000, 999999))
 
 # Handle command registration
@@ -57,6 +58,9 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
 
     elif data.name in state.clients.values():
         return await client.send("error", text = "Specified username is already taken.")
+
+    elif not re.match(HEX_COLOR_REGEX, data.color):
+        return await client.send("error", text = "Invalid HEX color code specified.")
 
     client.set_user_data(data.model_dump())
     client.identified = True
