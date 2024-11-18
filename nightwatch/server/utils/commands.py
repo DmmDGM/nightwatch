@@ -75,7 +75,7 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
 
     # Send the chat history
     for message in state.chat_history:
-        await client.send("message", **message)
+        await client.send("message", **message | {"history": True})
 
 @registry.command("message")
 async def command_message(state, client: NightwatchClient, data: models.MessageModel) -> None:
@@ -86,7 +86,7 @@ async def command_message(state, client: NightwatchClient, data: models.MessageM
 
 @registry.command("members")
 async def command_members(state, client: NightwatchClient) -> None:
-    return await client.send("members", list = list(state.clients.values()))
+    return await client.send("members", list = [client for client in state.clients if client.identified])
 
 @registry.command("admins")
 async def command_admins(state, client: NightwatchClient) -> None:
