@@ -70,6 +70,19 @@ class MembersCommand(BaseCommand):
 
         self.ui.websocket.callback({"type": "members"}, members_callback)
 
+class AdminsCommand(BaseCommand):
+    def __init__(self, *args) -> None:
+        super().__init__("admins", *args)
+
+    def on_execute(self, args: list[str]) -> None:
+        def admins_callback(response: dict):
+            if not response["data"]["list"]:
+                return self.print("There are no connected admins.")
+
+            self.print(f"Connected admins: {', '.join(response['data']['list'])}")
+
+        self.ui.websocket.callback({"type": "admins"}, admins_callback)
+
 class AdminCommand(BaseCommand):
     def __init__(self, *args) -> None:
         self.admin = False
@@ -91,6 +104,16 @@ class AdminCommand(BaseCommand):
                 self.print("  /admin ip <username>")
                 self.print("  /admin banlist")
                 self.print("  /admin say <message>")
+
+            case [code] if not self.admin:
+                def on_admin_response(response: dict):
+                    if response["data"]["success"] is False:
+                        return self.print("(fail) Invalid admin code specified.")
+
+                    self.print("(success) Privileges escalated.")
+                    self.admin = True
+
+                self.ui.websocket.callback({"type": "admin", "data": {"code": code}}, on_admin_response)
 
             case ["ban", username]:
                 def on_ban_response(response: dict):
@@ -132,19 +155,6 @@ class AdminCommand(BaseCommand):
             case ["say", _]:
                 self.ui.websocket.send({"type": "admin", "data": {"command": args}})
 
-            case [code]:
-                if self.admin:
-                    return self.print("(fail) Privileges already escalated.")
-
-                def on_admin_response(response: dict):
-                    if response["data"]["success"] is False:
-                        return self.print("(fail) Invalid admin code specified.")
-
-                    self.print("(success) Privileges escalated.")
-                    self.admin = True
-
-                self.ui.websocket.callback({"type": "admin", "data": {"code": code}}, on_admin_response)
-
             case _:
                 self.print("Admin command not recognized, try /admin help.")
 
@@ -153,5 +163,6 @@ commands = [
     ConfigCommand,
     HelpCommand,
     MembersCommand,
+    AdminsCommand,
     AdminCommand
 ]

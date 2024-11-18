@@ -44,6 +44,7 @@ def broadcast(state, type: str, **data) -> None:
     }).decode())
     if type == "message":
         state.chat_history.append(data)
+        state.chat_history = state.chat_history[-25:]
 
 # Setup commands
 @registry.command("identify")
@@ -62,7 +63,7 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
 
     log.info(client.id, f"Client has identified as '{data.name}'.")
 
-    await client.send("server", name = Constant.SERVER_NAME, online = len(state.clients))
+    await client.send("server", name = Constant.SERVER_NAME, online = len([k for k, v in state.clients.items() if v is not None]))
     broadcast(state, "message", text = f"{data.name} joined the chatroom.", user = Constant.SERVER_USER)
 
     # Send the chat history
@@ -79,6 +80,10 @@ async def command_message(state, client: NightwatchClient, data: models.MessageM
 @registry.command("members")
 async def command_members(state, client: NightwatchClient) -> None:
     return await client.send("members", list = list(state.clients.values()))
+
+@registry.command("admins")
+async def command_admins(state, client: NightwatchClient) -> None:
+    return await client.send("admins", list = state.admins)
 
 @registry.command("ping")
 async def command_ping(state, client: NightwatchClient) -> None:
@@ -141,5 +146,7 @@ async def command_admin(state, client: NightwatchClient, data: models.AdminModel
         return await client.send("admin", success = False)
 
     client.admin = True
+    state.admins.append(client.user_data["name"])
+
     log.info("admin", f"{client.user_data['name']} ({client.id}) is now an administrator.")
     return await client.send("admin", success = True)

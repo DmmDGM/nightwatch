@@ -15,7 +15,7 @@ from nightwatch.logging import log
 # Handle state
 class NightwatchStateManager():
     def __init__(self) -> None:
-        self.clients = {}
+        self.admins, self.clients = [], {}
         self.chat_history = []
 
     def add_client(self, client: WebSocketCommonProtocol) -> None:
@@ -69,5 +69,8 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
         log.info(client.id, "Client disconnected!")
         if client.identified:
             broadcast(state, "message", text = f"{client.user_data['name']} left the chatroom.", user = Constant.SERVER_USER)
-            
+
+    if client.identified and client.admin:
+        state.admins.remove(client.user_data["name"])
+
     state.remove_client(websocket)
