@@ -12,7 +12,7 @@ import websockets
 from websockets.sync.client import connect
 
 from nightwatch import __version__
-from nightwatch.config import config
+from nightwatch.config import fetch_config
 
 from .extra.ui import NightwatchUI
 from .extra.select import menu
@@ -20,6 +20,8 @@ from .extra.wswrap import ORJSONWebSocket
 
 # Initialization
 HEX_COLOR = re.compile(r"^[A-Fa-f0-9]{6}$")
+
+config = fetch_config("config")
 
 if os.name == "nt":
     urwid.set_encoding("utf-8")
@@ -32,7 +34,7 @@ def connect_loop(host: str, port: int, username: str) -> None:
             ws = ORJSONWebSocket(ws)
 
             # Handle identification payload
-            ws.send({"type": "identify", "data": {"name": username, "color": f"#{config['client.color']}"}})
+            ws.send({"type": "identify", "data": {"name": username, "color": config['client.color']}})
             response = ws.recv()
             if response["type"] == "error":
                 exit(f"\nCould not connect to {destination}. Additional details:\n{response['data']['text']}")

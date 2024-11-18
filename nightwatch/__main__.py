@@ -1,6 +1,6 @@
 # Copyright (c) 2024 iiPython
 
-from nightwatch.config import config
+from nightwatch.config import fetch_config
 
 # Initialization
 def main() -> None:
@@ -20,6 +20,6 @@ def main() -> None:
     # Launch client
     args = ap.parse_args()
     if args.reset:
-        config.reset()
+        fetch_config("config").reset()
 
     start_client(args.address, args.username)

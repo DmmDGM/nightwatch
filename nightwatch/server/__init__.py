@@ -1,7 +1,6 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
-import re
 import orjson
 from pydantic import ValidationError
 from websockets import WebSocketCommonProtocol
@@ -12,11 +11,6 @@ from .utils.websocket import NightwatchClient
 from .utils.modules.admin import admin_module
 
 from nightwatch.logging import log
-from nightwatch.config import fetch_config
-
-# Handle constants
-HEX_COLOR_REGEX = re.compile(r"^[A-Fa-f0-9]{6}$")
-config = fetch_config("server")
 
 # Handle state
 class NightwatchStateManager():

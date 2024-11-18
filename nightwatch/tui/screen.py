@@ -6,7 +6,7 @@ import typing
 from asyncio import Queue
 from dataclasses import dataclass
 
-from nightwatch.tui import HEX_COLOR
+from nightwatch import HEX_COLOR_REGEX
 
 # Handle events
 @dataclass
@@ -50,7 +50,7 @@ class Screen:
                     name, color = data.author.name, data.author.color
 
                     # Convert user color from HEX to RGB
-                    if re.match(HEX_COLOR, color):
+                    if re.match(HEX_COLOR_REGEX, color):
                         r = int(color[0:2], 16)
                         g = int(color[2:4], 16)
                         b = int(color[4:6], 16)

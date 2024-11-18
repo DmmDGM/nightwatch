@@ -21,7 +21,7 @@ async def establish_connection(host: str, port: int) -> None:
             "type": "identify",
             "data": {
                 "name": config["username"],
-                "color": f"#{config['color']}"
+                "color": config["color"]
             }
         }), text = True)
 

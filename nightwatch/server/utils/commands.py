@@ -12,12 +12,15 @@ from . import models
 from .websocket import NightwatchClient
 from .modules.admin import admin_module
 
-from nightwatch.server import config, HEX_COLOR_REGEX
+from nightwatch import HEX_COLOR_REGEX
 from nightwatch.logging import log
+from nightwatch.config import fetch_config
 
 # Constants
+config = fetch_config("server")
+
 class Constant:
-    SERVER_USER: dict[str, str] = {"name": "Nightwatch", "color": "gray"}
+    SERVER_USER: dict[str, str] = {"name": "Nightwatch", "color": "555753"}
     SERVER_NAME: str = config["name"] or "Untitled Server"
     ADMIN_CODE: str = str(random.randint(100000, 999999))
 

@@ -4,9 +4,8 @@
 import re
 import asyncio
 
-from nightwatch import __version__
+from nightwatch import __version__, HEX_COLOR_REGEX
 from nightwatch.tui import config
-from nightwatch.server import HEX_COLOR_REGEX
 
 from nightwatch.tui.modules.selection import show_menu
 from nightwatch.tui.modules.connection import establish_connection
