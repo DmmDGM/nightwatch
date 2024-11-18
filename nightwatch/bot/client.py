@@ -40,6 +40,9 @@ class Client:
             # Handle all the different types
             match payload["type"]:
                 case "message":
+                    if data.get("history") is True:
+                        continue  # Ignore history messages
+
                     if self._on_message is not None:
                         message = Message(
                             User(*data["user"].values()),

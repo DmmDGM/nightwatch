@@ -86,7 +86,7 @@ async def command_message(state, client: NightwatchClient, data: models.MessageM
 
 @registry.command("members")
 async def command_members(state, client: NightwatchClient) -> None:
-    return await client.send("members", list = [client for client in state.clients if client.identified])
+    return await client.send("members", list = [client for client in state.clients.values() if client is not None])
 
 @registry.command("admins")
 async def command_admins(state, client: NightwatchClient) -> None:
