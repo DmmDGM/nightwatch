@@ -73,10 +73,10 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
     log.info(client.id, f"Client has identified as '{data.name}'.")
 
     # Send the chat history
+    await client.send("server", name = Constant.SERVER_NAME, online = len([k for k, v in state.clients.items() if v is not None]))
     for message in state.chat_history:
         await client.send("message", **message | {"history": True})
 
-    await client.send("server", name = Constant.SERVER_NAME, online = len([k for k, v in state.clients.items() if v is not None]))
     broadcast(state, "message", text = f"{data.name} joined the chatroom.", user = Constant.SERVER_USER)
     broadcast(state, "join", name = data.name)
 
