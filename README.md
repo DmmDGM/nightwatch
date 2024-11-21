@@ -16,12 +16,9 @@ Here are two of the standard clients for you to choose from:
     - Installation is as simple as `pip install nightwatch-chat`.
     - The client can be started by running `nightwatch` in your terminal.
 
-- Full Desktop App ([based on tauri](https://tauri.app/))
-    - Download the latest release for your system from [here](https://github.com/iiPythonx/nightwatch/releases/latest).
-    - Alternatively, run it manually:
-        - Follow the instructions from [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites) (including installing [Rust](https://rust-lang.org)).
-        - Install the Tauri CLI: `cargo install tauri-cli`.
-        - Launch via `cargo tauri dev` inside the `nightwatch/desktop/` folder.
+- Browser App
+    - Available in the `nightwatch/web` folder.
+    - Alternatively, access it at [nightwatch.iipython.dev](https://nightwatch.iipython.dev).
 
 # Server Installation
 
@@ -41,12 +38,12 @@ An example NGINX configuration:
 server {
 
     # SSL
-    listen			    443 ssl;
-    ssl_certificate		/etc/ssl/nightwatch.pem;
-    ssl_certificate_key	/etc/ssl/nightwatch.key;
+    listen              443 ssl;
+    ssl_certificate     /etc/ssl/nightwatch.pem;
+    ssl_certificate_key /etc/ssl/nightwatch.key;
 
     # Setup location
-    server_name nightwatch.iipython.dev;
+    server_name nightwatch.iipython.dev;v
     location /gateway {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection upgrade;
@@ -59,8 +56,9 @@ server {
 # Configuration
 
 Configuration is available at:
-- ***nix systems**: ~/.config/nightwatch/config.json
-- **Windows**: %LocalAppData%\Nightwatch\config.json
+- ***nix systems**: ~/.config/nightwatch
+- **Windows**: %LocalAppData%\Nightwatch
 
+Client (terminal) configuration is available at `client.json`, while the server configuration is stored in `server.json`.  
 The Nightwatch client uses the JSON for username, coloring, and more. Check the `/config` command for more information. 
 The backend chat server uses the config file for the server name, although more is sure to come.
