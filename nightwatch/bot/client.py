@@ -18,7 +18,11 @@ class Context:
         await self.socket.send(orjson.dumps({"type": "message", "data": {"text": message}}), text = True)
 
     async def reply(self, message: str) -> None:
-        await self.send(f"[Reply to {self.message.user.name}] {message}")
+        await self.send(f"[↑ {self.message.user.name}] {message}")
+
+    async def run_command(self, command: str, data: dict) -> dict:
+        await self.socket.send(orjson.dumps({"type": command, "data": data}))
+        return orjson.loads(await self.socket.recv())
 
 # Main client class
 class Client:
