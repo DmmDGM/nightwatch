@@ -32,6 +32,22 @@ export default class ConnectionManager {
                 this.callbacks.on_message(data.data);
                 break
 
+            case "server":
+                this.callbacks.on_message({
+                    text: `Welcome to ${data.data.name}. There are ${data.data.online} user(s) online.`,
+                    user: {
+                        name: "Nightwatch",
+                        color: "555753"
+                    },
+                    time: Math.round(Date.now() / 1000)
+                });
+                break;
+
+            case "join":
+            case "leave":
+                this.callbacks.handle_member(data.type, data.data.name);
+                break
+
             case "error":
                 console.error(data);
                 break;
@@ -47,11 +63,14 @@ export default class ConnectionManager {
         return result;
     };
 
-    identify(username, color) {
+    async identify(username, color) {
         this.websocket.send(JSON.stringify({
             type: "identify",
             data: { name: username, color }
         }));
+
+        // Handle initial member list
+        for (const member of (await this.send({ type: "members" }, true)).list) this.callbacks.handle_member("join", member);
     }
 
     async send(payload, is_callback) {

@@ -34,19 +34,19 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
                     </div>
                 </div>
                 <div class = "member-list">
-                    <p>Member list.</p>
+                    <p>Current member list:</p>
                 </div>
             `;
 
             // Handle sending
-            document.getElementById("actual-input").addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    if (!e.currentTarget.value.trim()) return;
-                    connection.send({ type: "message", data: { text: e.currentTarget.value } });
-                    e.currentTarget.value = "";
-                    return;
-                };
-            });
+            const input = document.getElementById("actual-input");
+            function send_message() {
+                if (!input.value.trim()) return;
+                connection.send({ type: "message", data: { text: input.value } });
+                input.value = "";
+            }
+            input.addEventListener("keydown", (e) => { if (e.key === "Enter") send_message(); });
+            document.querySelector("button").addEventListener("click", send_message);
         },
         on_message: (message) => {
             const current_time = TIME_FORMATTER.format(new Date(message.time * 1000));
@@ -70,6 +70,21 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             const chat = document.querySelector(".chat");
             chat.appendChild(element);
             chat.scrollTop = chat.scrollHeight;
+        },
+        handle_member: (event_type, member_name) => {
+            const member_list = document.querySelector(".member-list");
+            const existing_member = document.querySelector(`[data-member = "${member_name}"]`);
+            if (event_type === "leave") {
+                if (existing_member) existing_member.remove();
+                return;
+            }
+            if (existing_member) return;
+
+            // Handle element
+            const element = document.createElement("span");
+            element.innerText = `→ ${member_name}`;
+            element.setAttribute("data-member", member_name);
+            member_list.appendChild(element);
         }
     });
 

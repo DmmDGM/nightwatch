@@ -109,7 +109,12 @@ div.chat-input {
 div.member-list {
     width: 20%;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
     border-left: 1px solid white;
+}
+div.member-list > span {
+    margin-left: 10px;
 }
 div.chat {
     padding: 10px;
