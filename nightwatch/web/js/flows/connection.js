@@ -22,7 +22,11 @@ export default class ConnectionManager {
     #on_message(event) {
         const data = JSON.parse(event.data);
         console.log("[E]", data);
-        if (data.callback in this.callbacks) return this.callbacks[data.callback](data.data);
+        if (data.callback in this.callbacks) {
+            this.callbacks[data.callback](data.data);
+            delete this.callbacks[data.callback];
+            return;
+        };
         switch (data.type) {
             case "message":
                 this.callbacks.on_message(data.data);

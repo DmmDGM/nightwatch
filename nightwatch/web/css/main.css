@@ -31,7 +31,6 @@ main {
     gap: 15px;
     display: flex;
     flex-direction: column;
-    /* justify-content: right; */
 
     /* Aesthetics */
     border: 1px solid white;
