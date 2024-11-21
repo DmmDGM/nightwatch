@@ -1,0 +1,128 @@
+/* Copyright (c) 2024 iiPython */
+
+/* Font handling */
+@font-face {
+    font-family: "Fira Code";
+    src: url("/fonts/fira.woff2") format("woff2");
+}
+
+/* Baselining */
+* {
+    margin: 0px;
+    color: white;
+    font-family: "Fira Code";
+}
+html, body {
+    height: 100%;
+    background-color: black;
+}
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Handle content */
+main {
+    width: 500px;
+    padding: 20px;
+
+    /* Alignment */
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: right; */
+
+    /* Aesthetics */
+    border: 1px solid white;
+}
+main > button {
+    width: 100px;
+    align-self: flex-end;
+}
+main.loading {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Random ass theming */
+button {
+    border: 1px solid white;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color .5s ease;
+    background-color: transparent;
+}
+button:hover {
+    background-color: #181818;
+}
+input {
+    border: 1px solid white;
+    padding: 10px;
+    background-color: transparent;
+    outline: none;
+    transition: border-color .5s ease;
+}
+input:hover {
+    border-color: #bbbbbb;
+}
+
+/* Spinner */
+.loader {
+    width: 25px;
+    height: 25px;
+    border: 3px solid #FFF;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Messages */
+.message {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.timestamp {
+    margin-left: auto;
+}
+
+/* Whuh?!?!?!? */
+main.full-layout {
+    height: calc(100% - 72px);
+    width: calc(100% - 72px);
+    flex-direction: row;
+}
+div.chat-input {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}
+div.member-list {
+    width: 20%;
+    padding: 10px;
+    border-left: 1px solid white;
+}
+div.chat {
+    padding: 10px;
+    height: calc(100% - 40px);
+    overflow-y: scroll;
+}
+div.input-box {
+    height: 40px;
+    flex: 1;
+    display: flex;
+    gap: 10px;
+}
+#actual-input {
+    width: 100%;
+}

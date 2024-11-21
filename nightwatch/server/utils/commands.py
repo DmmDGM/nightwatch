@@ -2,6 +2,7 @@
 
 # Modules
 import re
+import time
 import random
 from typing import Callable
 
@@ -42,9 +43,10 @@ registry = CommandRegistry()
 
 # Handle broadcasting
 def broadcast(state, type: str, **data) -> None:
+    data |= {"time": round(time.time())}
     websockets.broadcast(state.clients, orjson.dumps({
         "type": type,
-        "data": data
+        "data": data,
     }).decode())
     if type == "message":
         state.chat_history.append(data)
@@ -70,12 +72,13 @@ async def command_identify(state, client: NightwatchClient, data: models.Identif
 
     log.info(client.id, f"Client has identified as '{data.name}'.")
 
-    await client.send("server", name = Constant.SERVER_NAME, online = len([k for k, v in state.clients.items() if v is not None]))
-    broadcast(state, "message", text = f"{data.name} joined the chatroom.", user = Constant.SERVER_USER)
-
     # Send the chat history
     for message in state.chat_history:
         await client.send("message", **message | {"history": True})
+
+    await client.send("server", name = Constant.SERVER_NAME, online = len([k for k, v in state.clients.items() if v is not None]))
+    broadcast(state, "message", text = f"{data.name} joined the chatroom.", user = Constant.SERVER_USER)
+    broadcast(state, "join", name = data.name)
 
 @registry.command("message")
 async def command_message(state, client: NightwatchClient, data: models.MessageModel) -> None:

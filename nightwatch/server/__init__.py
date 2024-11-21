@@ -69,6 +69,7 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
         log.info(client.id, "Client disconnected!")
         if client.identified:
             broadcast(state, "message", text = f"{client.user_data['name']} left the chatroom.", user = Constant.SERVER_USER)
+            broadcast(state, "leave", name = client.user_data["name"])
 
     if client.identified and client.admin:
         state.admins.remove(client.user_data["name"])
