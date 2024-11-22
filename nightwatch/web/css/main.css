@@ -91,6 +91,15 @@ input:hover {
     align-items: center;
     gap: 10px;
 }
+.message-content {
+    border-left: 1px solid white;
+    padding-left: 10px;
+    overflow-x: hidden;
+    max-width: calc(100% - 80px);
+}
+.message-content > img {
+    max-width: 300px;
+}
 .timestamp {
     margin-left: auto;
 }
