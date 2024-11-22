@@ -74,7 +74,7 @@ async def connection(websocket: ServerConnection) -> None:
 
     log.info(client.id, "Client disconnected!")
 
-    if client.identified and client.admin:
+    if client.admin:
         state.admins.remove(client.user_data["name"])
 
     state.remove_client(websocket)

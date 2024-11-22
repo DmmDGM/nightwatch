@@ -56,13 +56,24 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             const hide_time = current_time === last_time;
             last_author = message.user.name, last_time = current_time;
 
+            // Construct text/attachment
+            let attachment = message.text;
+            if (attachment.match(/https:\/\/[\w\d./]+.(?:avif|png)/)) attachment = `<img src = "${attachment}">`;
+
+            // Clean attachment for the love of god
+            attachment = attachment.replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/"/g, "&#039;");
+
             // Construct message
             const element = document.createElement("div");
             element.classList.add("message");
             element.innerHTML = `
                 <span style = "color: #${message.user.color};${hide_author ? 'color: transparent;' : ''}">${message.user.name}</span>
                 <span> | </span>
-                <span>${message.text}</span>
+                <span>${attachment}</span>
                 <span class = "timestamp"${hide_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
             `;
 
