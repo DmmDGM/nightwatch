@@ -63,7 +63,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
 
             // Construct text/attachment
             let attachment = message.text, classlist = "message-content";
-            if (attachment.match(/^https:\/\/[\w\d./]+.(?:avif|png|jpg|jpeg|webp|ico)$/)) {
+            if (attachment.match(/^https:\/\/[\w\d./-]+.(?:avif|png|jpg|jpeg|webp|ico)$/)) {
                 attachment = `<img src = "${attachment}">`;
                 classlist += " has-image";
             } else {
