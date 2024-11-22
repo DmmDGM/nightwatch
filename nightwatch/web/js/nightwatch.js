@@ -4,7 +4,6 @@ import ConnectionManager from "./flows/connection.js";
 import { main, grab_data } from "./flows/welcome.js";
 
 // Couple constants
-// const DEFAULT_SERVER = "nightwatch.iipython.dev";
 const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
@@ -89,7 +88,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             // Push message and autoscroll
             const chat = document.querySelector(".chat");
             chat.appendChild(element);
-            chat.scrollTop = chat.scrollHeight;
+            chat.scrollTop = chat.scrollHeight; 
         },
         handle_member: (event_type, member_name) => {
             const member_list = document.querySelector(".member-list");
