@@ -3,8 +3,8 @@
 # Modules
 import orjson
 from pydantic import ValidationError
-from websockets import WebSocketCommonProtocol
 from websockets.exceptions import ConnectionClosed
+from websockets.asyncio.server import ServerConnection
 
 from .utils.commands import registry, broadcast, Constant
 from .utils.websocket import NightwatchClient
@@ -18,25 +18,25 @@ class NightwatchStateManager():
         self.admins, self.clients = [], {}
         self.chat_history = []
 
-    def add_client(self, client: WebSocketCommonProtocol) -> None:
+    def add_client(self, client: ServerConnection) -> None:
         self.clients[client] = None
-        setattr(client, "ip", client.request.headers.get("CF-Connecting-IP", client.remote_address[0]))
+        if client.request is not None:
+            setattr(client, "ip", client.request.headers.get("CF-Connecting-IP", client.remote_address[0]))
 
-    def remove_client(self, client: WebSocketCommonProtocol) -> None:
+    def remove_client(self, client: ServerConnection) -> None:
         if client in self.clients:
             del self.clients[client]
 
 state = NightwatchStateManager()
 
 # Socket entrypoint
-async def connection(websocket: WebSocketCommonProtocol) -> None:
+async def connection(websocket: ServerConnection) -> None:
     client = NightwatchClient(state, websocket)
     if websocket.ip in admin_module.banned_users:  # type: ignore
         return await client.send("error", text = "You have been banned from this server.")
 
     try:
         log.info(client.id, "Client connected!")
-
         async for message in websocket:
             message = orjson.loads(message)
             if not isinstance(message, dict):
@@ -66,10 +66,13 @@ async def connection(websocket: WebSocketCommonProtocol) -> None:
         log.warn(client.id, "Failed to decode JSON from client.")
 
     except ConnectionClosed:
-        log.info(client.id, "Client disconnected!")
-        if client.identified:
-            broadcast(state, "message", text = f"{client.user_data['name']} left the chatroom.", user = Constant.SERVER_USER)
-            broadcast(state, "leave", name = client.user_data["name"])
+        pass
+
+    if client.identified:
+        broadcast(state, "message", text = f"{client.user_data['name']} left the chatroom.", user = Constant.SERVER_USER)
+        broadcast(state, "leave", name = client.user_data["name"])
+
+    log.info(client.id, "Client disconnected!")
 
     if client.identified and client.admin:
         state.admins.remove(client.user_data["name"])
