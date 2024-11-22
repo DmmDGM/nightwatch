@@ -57,9 +57,10 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             last_author = message.user.name, last_time = current_time;
 
             // Construct text/attachment
-            let attachment = message.text;
-            if (attachment.match(/https:\/\/[\w\d./]+.(?:avif|png)/)) {
-                attachment = `<img src = "${attachment}">`
+            let attachment = message.text, classlist = "message-content";
+            if (attachment.match(/^https:\/\/[\w\d./]+.(?:avif|png|jpg|jpeg|webp|ico)$/)) {
+                attachment = `<img src = "${attachment}">`;
+                classlist += " has-image";
             } else {
 
                 // Clean attachment for the love of god
@@ -75,7 +76,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             element.classList.add("message");
             element.innerHTML = `
                 <span style = "color: #${message.user.color};${hide_author ? 'color: transparent;' : ''}">${message.user.name}</span>
-                <span class = "message-content">${attachment}</span>
+                <span class = "${classlist}">${attachment}</span>
                 <span class = "timestamp"${hide_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
             `;
 

@@ -92,10 +92,15 @@ input:hover {
     gap: 10px;
 }
 .message-content {
+    display: flex;
     border-left: 1px solid white;
     padding-left: 10px;
     overflow-x: hidden;
     max-width: calc(100% - 80px);
+}
+.message-content.has-image {
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 .message-content > img {
     max-width: 300px;
