@@ -4,7 +4,7 @@ import ConnectionManager from "./flows/connection.js";
 import { main, grab_data } from "./flows/welcome.js";
 
 // Couple constants
-const DEFAULT_SERVER = "nightwatch.iipython.dev";
+// const DEFAULT_SERVER = "nightwatch.iipython.dev";
 const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
@@ -12,7 +12,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
 });
 
 (async () => {
-    const { username, address } = await grab_data(DEFAULT_SERVER);
+    const { username, color, address } = await grab_data();
 
     // Keep track of the last message
     let last_author, last_time;
@@ -20,7 +20,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
     // Connection screen
     const connection = new ConnectionManager(address, {
         on_connect: () => {
-            connection.identify(username, "126bf1");
+            connection.identify(username, color);
 
             // Remove loading and setup UI
             main.classList.remove("loading");
@@ -34,6 +34,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
                     </div>
                 </div>
                 <div class = "member-list">
+                    <button id = "leave">LEAVE SERVER</button>
                     <p>Current member list:</p>
                 </div>
             `;
@@ -46,7 +47,12 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
                 input.value = "";
             }
             input.addEventListener("keydown", (e) => { if (e.key === "Enter") send_message(); });
-            document.querySelector("button").addEventListener("click", send_message);
+            document.querySelector(".chat-input button").addEventListener("click", send_message);
+
+            // Handle leaving
+            document.getElementById("leave").addEventListener("click", () => {
+                window.location.reload();  // Fight me.
+            });
         },
         on_message: (message) => {
             const current_time = TIME_FORMATTER.format(new Date(message.time * 1000));

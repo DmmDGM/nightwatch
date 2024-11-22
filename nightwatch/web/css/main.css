@@ -109,6 +109,15 @@ input:hover {
     margin-left: auto;
 }
 
+/* Handle setup wizard */
+.tabs {
+    gap: 5px;
+    display: flex;
+}
+button[data-item] {
+    flex: 1;
+}
+
 /* Whuh?!?!?!? */
 main.full-layout {
     height: calc(100% - 72px);
@@ -121,6 +130,7 @@ div.chat-input {
     width: 80%;
 }
 div.member-list {
+    gap: 5px;
     width: 20%;
     padding: 10px;
     display: flex;
@@ -129,6 +139,9 @@ div.member-list {
 }
 div.member-list > span {
     margin-left: 10px;
+}
+div.member-list > button {
+    margin-bottom: 10px;
 }
 div.chat {
     padding: 10px;
