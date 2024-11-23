@@ -9,6 +9,7 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
     minute: "2-digit",
     hour12: true
 });
+const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
 
 (async () => {
     const { username, color, address } = await grab_data();
@@ -88,7 +89,10 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
             // Push message and autoscroll
             const chat = document.querySelector(".chat");
             chat.appendChild(element);
-            chat.scrollTop = chat.scrollHeight; 
+            chat.scrollTop = chat.scrollHeight;
+
+            // Handle notification sound
+            if (!document.hasFocus()) NOTIFICATION_SFX.play();
         },
         handle_member: (event_type, member_name) => {
             const member_list = document.querySelector(".member-list");
