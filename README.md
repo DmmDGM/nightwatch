@@ -46,6 +46,7 @@ server {
     server_name nightwatch.iipython.dev;
     location /proxy {
         proxy_pass http://192.168.0.1:8000;
+        proxy_http_version 1.1;
     }
     location /gateway {
         proxy_set_header Upgrade $http_upgrade;
