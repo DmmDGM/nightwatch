@@ -13,7 +13,6 @@ from starlette.websockets import WebSocketDisconnect, WebSocketState
 from nightwatch.config import fetch_config
 
 # Load config data
-NIGHTWATCH_USER = {"name": "Nightwatch", "hex": "555753"}
 config = fetch_config("rics")
 
 # Initialization
@@ -28,11 +27,14 @@ app.state.message_log = []
 
 async def broadcast(payload: dict) -> None:
     payload["data"]["time"] = round(time())
+    if payload["type"] == "message":
+        if "user" not in payload["data"]:
+            payload["data"]["user"] = {"name": "Nightwatch", "hex": "555753"}
+
+        app.state.message_log = app.state.message_log[-24:] + [payload["data"]]
+
     for client in app.state.clients.values():
         await client.send(payload)
-
-    if payload["type"] == "message":
-        app.state.message_log = app.state.message_log[-24:] + [payload["data"]]
 
 app.state.broadcast = broadcast
 
@@ -111,7 +113,7 @@ async def connect_endpoint(
 
     # Broadcast join
     await app.state.broadcast({"type": "join", "data": {"user": client.serialize()}})
-    await app.state.broadcast({"type": "message", "data": {"user": NIGHTWATCH_USER, "message": f"{client.username} has joined the server."}})
+    await app.state.broadcast({"type": "message", "data": {"message": f"{client.username} has joined the server."}})
 
     # Handle loop
     while websocket.client_state == WebSocketState.CONNECTED:
@@ -119,15 +121,9 @@ async def connect_endpoint(
             case {"type": "message", "data": {"message": message}}:
                 await app.state.broadcast({"type": "message", "data": {"user": client.serialize(), "message": message}})
 
-            case {"type": "user-list", "data": {"callback": callback}}:
+            case {"type": "user-list" | "admin-list" as type, "data": {"callback": callback}}:
                 await client.send({"type": "response", "data": {
-                    "user-list": [client.serialize() for client in app.state.clients.values()],
-                    "callback": callback
-                }})
-
-            case {"type": "admin-list", "data": {"callback": callback}}:
-                await client.send({"type": "response", "data": {
-                    "admin-list": [client.serialize() for client in app.state.clients.values() if client.admin],
+                    type: [client.serialize() for client in app.state.clients.values() if type != "admin-list" or client.admin],
                     "callback": callback
                 }})
 
@@ -135,5 +131,5 @@ async def connect_endpoint(
                 await client.send({"type": "problem", "data": {"message": "Invalid payload received."}})
 
     await app.state.broadcast({"type": "leave", "data": {"user": client.serialize()}})
-    await app.state.broadcast({"type": "message", "data": {"user": NIGHTWATCH_USER, "message": f"{client.username} has left the server."}})
+    await app.state.broadcast({"type": "message", "data": {"message": f"{client.username} has left the server."}})
     client.cleanup()

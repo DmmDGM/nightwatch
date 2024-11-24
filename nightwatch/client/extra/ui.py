@@ -65,7 +65,7 @@ class NightwatchUI():
             except ValueError:
                 pass
 
-        self.websocket.send({"type": "message", "data": {"text": text}})
+        self.websocket.send({"type": "message", "data": {"message": text}})
 
     def construct_message(self, author: str, content: str, user_color: str = "gray") -> None:
         visible_author = author if author != self.last_author else " " * self.length(author)
@@ -96,27 +96,22 @@ class NightwatchUI():
         if not hasattr(self, "loop"):
             return  # We aren't even initialized yet
 
-        elif "callback" in data:
-            callback = self.websocket.callbacks[data["callback"]]
-            del self.websocket.callbacks[data["callback"]]
-            return callback(data)
+        match data:
+            case {"type": "response", "data": {"callback": callback}}:
+                callbackfn = self.websocket.callbacks[callback]
+                del self.websocket.callbacks[callback]
+                return callbackfn(data)
 
-        match data["type"]:
-            case "message":
-                data = data["data"]
-                user, color_code = data.get("user", {"name": "Nightwatch"}), "gray"
-                if user["name"] != "Nightwatch":
-
-                    # Handle colors and fallbacks
-                    color_code = f"user-{user['name']}"
-                    self.loop.screen.register_palette_entry(color_code, "yellow", "", foreground_high = f"#{user['color']}")
+            case {"type": "message", "data": {"user": user, "message": message}}:
+                color_code = f"user-{user['name']}"
+                self.loop.screen.register_palette_entry(color_code, "yellow", "", foreground_high = f"#{user['hex']}")
 
                 # Push message to screen
-                self.add_message(user["name"], data["text"], color_code)
+                self.add_message(user["name"], message, color_code)
 
-            case "error":
-                exit(f"Nightwatch Exception\n{'=' * 50}\n\n{data['text']}")
+            case _:
+                exit(f"Nightwatch Exception\n{'=' * 50}\n\n{data['data']['message']}")
 
     def on_ready(self, loop: urwid.MainLoop, payload: dict) -> None:
         self.loop = loop
-        self.construct_message("Nightwatch", f"Welcome to {payload['name']}. There are {payload['online']} user(s) online.")
+        self.construct_message("Nightwatch", f"You have connected to {payload['name']}.")

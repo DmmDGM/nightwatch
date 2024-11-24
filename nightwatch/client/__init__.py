@@ -4,14 +4,14 @@
 import os
 import re
 import typing
-from time import sleep
+import requests
 from threading import Thread
 
 import urwid
 import websockets
 from websockets.sync.client import connect
 
-from nightwatch import __version__
+from nightwatch import __version__, HEX_COLOR_REGEX
 from nightwatch.config import fetch_config
 
 from .extra.ui import NightwatchUI
@@ -19,8 +19,6 @@ from .extra.select import menu
 from .extra.wswrap import ORJSONWebSocket
 
 # Initialization
-HEX_COLOR = re.compile(r"^[A-Fa-f0-9]{6}$")
-
 config = fetch_config("config")
 
 if os.name == "nt":
@@ -28,16 +26,20 @@ if os.name == "nt":
 
 # Connection handler
 def connect_loop(host: str, port: int, username: str) -> None:
-    destination = f"ws{'s' if port == 443 else ''}://{host}:{port}/gateway"
+    protocol, url = "s" if port == 443 else "", f"{host}:{port}"
+
+    # Perform authentication
+    resp = requests.post(f"http{protocol}://{url}/api/join", json = {"username": username, "hex": config["client.color"]}).json()
+    if resp.get("code") != 200:
+        exit(f"\nCould not connect to {url}. Additional details:\n{resp}")
+
+    destination = f"ws{protocol}://{url}/api/ws?authorization={resp['authorization']}"
     try:
         with connect(destination) as ws:
             ws = ORJSONWebSocket(ws)
 
-            # Handle identification payload
-            ws.send({"type": "identify", "data": {"name": username, "color": config['client.color']}})
+            # Handle fetching server information
             response = ws.recv()
-            if response["type"] == "error":
-                exit(f"\nCould not connect to {destination}. Additional details:\n{response['data']['text']}")
 
             # Create UI
             ui = NightwatchUI(ws)
@@ -61,17 +63,7 @@ def connect_loop(host: str, port: int, username: str) -> None:
                 except websockets.exceptions.ConnectionClosed:
                     pass
 
-            def ping_loop(ws: ORJSONWebSocket) -> None:
-                try:
-                    while ws.ws:
-                        ws.send({"type": "ping"})
-                        sleep(10)
-
-                except websockets.exceptions.ConnectionClosed:
-                    pass
-
             Thread(target = message_loop, args = [ws, ui]).start()
-            Thread(target = ping_loop, args = [ws]).start()
 
             # Start mainloop
             ui.on_ready(loop, response["data"])
@@ -102,14 +94,14 @@ def start_client(
 
     # Handle color setup
     color = config["client.color"] or ""
-    if not re.match(HEX_COLOR, color):
+    if not re.match(HEX_COLOR_REGEX, color):
         while True:
             print("For fun, you can select a color for your username.")
             print("Please enter the HEX code (6 long) you would like to have as your color.")
             color = (input("> #") or "ffffff").lstrip("#")
 
             # Validate their color choice
-            if re.match(HEX_COLOR, color):
+            if re.match(HEX_COLOR_REGEX, color):
                 break
 
             print("\033[3A\033[0J", end = "")

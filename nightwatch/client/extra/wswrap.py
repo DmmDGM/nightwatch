@@ -21,4 +21,12 @@ class ORJSONWebSocket():
     def callback(self, payload: dict, callback: FunctionType) -> None:
         callback_id = generate()
         self.callbacks[callback_id] = callback
-        self.send(payload | {"callback": callback_id})
+
+        # Send off callback
+        if "data" not in payload:
+            payload["data"] = {"callback": callback_id}
+
+        else:
+            payload["data"]["callback"] = callback_id
+
+        self.send(payload)
