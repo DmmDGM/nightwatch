@@ -83,80 +83,80 @@ class AdminsCommand(BaseCommand):
 
         self.ui.websocket.callback({"type": "admin-list"}, admins_callback)
 
-class AdminCommand(BaseCommand):
-    def __init__(self, *args) -> None:
-        self.admin = False
-        super().__init__("admin", *args)
+# class AdminCommand(BaseCommand):
+#     def __init__(self, *args) -> None:
+#         self.admin = False
+#         super().__init__("admin", *args)
 
-    def on_execute(self, args: list[str]) -> None:
-        match args:
-            case [] if not self.admin:
-                self.ui.websocket.send({"type": "admin"})
-                self.print("Run /admin <code> with the admin code in your server console.")
+#     def on_execute(self, args: list[str]) -> None:
+#         match args:
+#             case [] if not self.admin:
+#                 self.ui.websocket.send({"type": "admin"})
+#                 self.print("Run /admin <code> with the admin code in your server console.")
 
-            case [] | ["help"]:
-                self.print("Available commands:")
-                if not self.admin:
-                    self.print("  /admin <admin code>")
+#             case [] | ["help"]:
+#                 self.print("Available commands:")
+#                 if not self.admin:
+#                     self.print("  /admin <admin code>")
 
-                self.print("  /admin ban <username>")
-                self.print("  /admin unban <username>")
-                self.print("  /admin ip <username>")
-                self.print("  /admin banlist")
-                self.print("  /admin say <message>")
+#                 self.print("  /admin ban <username>")
+#                 self.print("  /admin unban <username>")
+#                 self.print("  /admin ip <username>")
+#                 self.print("  /admin banlist")
+#                 self.print("  /admin say <message>")
 
-            case [code] if not self.admin:
-                def on_admin_response(response: dict):
-                    if response["data"]["success"] is False:
-                        return self.print("(fail) Invalid admin code specified.")
+#             case [code] if not self.admin:
+#                 def on_admin_response(response: dict):
+#                     if response["data"]["success"] is False:
+#                         return self.print("(fail) Invalid admin code specified.")
 
-                    self.print("(success) Privileges escalated.")
-                    self.admin = True
+#                     self.print("(success) Privileges escalated.")
+#                     self.admin = True
 
-                self.ui.websocket.callback({"type": "admin", "data": {"code": code}}, on_admin_response)
+#                 self.ui.websocket.callback({"type": "admin", "data": {"code": code}}, on_admin_response)
 
-            case ["ban", username]:
-                def on_ban_response(response: dict):
-                    if not response["data"]["success"]:
-                        return self.print(f"(fail) {response['data']['error']}")
+#             case ["ban", username]:
+#                 def on_ban_response(response: dict):
+#                     if not response["data"]["success"]:
+#                         return self.print(f"(fail) {response['data']['error']}")
 
-                    self.print(f"(success) {username} has been banned.")
+#                     self.print(f"(success) {username} has been banned.")
 
-                self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_ban_response)
+#                 self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_ban_response)
 
-            case ["unban", username]:
-                def on_unban_response(response: dict):
-                    if not response["data"]["success"]:
-                        return self.print(f"(fail) {response['data']['error']}")
+#             case ["unban", username]:
+#                 def on_unban_response(response: dict):
+#                     if not response["data"]["success"]:
+#                         return self.print(f"(fail) {response['data']['error']}")
 
-                    self.print(f"(success) {username} has been unbanned.")
+#                     self.print(f"(success) {username} has been unbanned.")
 
-                self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_unban_response)
+#                 self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_unban_response)
 
-            case ["ip", username]:
-                def on_ip_response(response: dict):
-                    if not response["data"]["success"]:
-                        return self.print(f"(fail) {response['data']['error']}")
+#             case ["ip", username]:
+#                 def on_ip_response(response: dict):
+#                     if not response["data"]["success"]:
+#                         return self.print(f"(fail) {response['data']['error']}")
 
-                    self.print(f"(success) {username}'s IP address is {response['data']['ip']}.")
+#                     self.print(f"(success) {username}'s IP address is {response['data']['ip']}.")
 
-                self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_ip_response)
+#                 self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_ip_response)
 
-            case ["banlist"]:
-                def on_banlist_response(response: dict):
-                    if not response["data"]["banlist"]:
-                        return self.print("(fail) Nobody is banned on this server.")
+#             case ["banlist"]:
+#                 def on_banlist_response(response: dict):
+#                     if not response["data"]["banlist"]:
+#                         return self.print("(fail) Nobody is banned on this server.")
 
-                    self.print("Current banlist:")
-                    self.print(f"{', '.join(f'{v} ({k})' for k, v in response['data']['banlist'].items())}")
+#                     self.print("Current banlist:")
+#                     self.print(f"{', '.join(f'{v} ({k})' for k, v in response['data']['banlist'].items())}")
 
-                self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_banlist_response)
+#                 self.ui.websocket.callback({"type": "admin", "data": {"command": args}}, on_banlist_response)
 
-            case ["say", _]:
-                self.ui.websocket.send({"type": "admin", "data": {"command": args}})
+#             case ["say", _]:
+#                 self.ui.websocket.send({"type": "admin", "data": {"command": args}})
 
-            case _:
-                self.print("Admin command not recognized, try /admin help.")
+#             case _:
+#                 self.print("Admin command not recognized, try /admin help.")
 
 commands = [
     ShrugCommand,
@@ -164,5 +164,5 @@ commands = [
     HelpCommand,
     MembersCommand,
     AdminsCommand,
-    AdminCommand
+    # AdminCommand
 ]
