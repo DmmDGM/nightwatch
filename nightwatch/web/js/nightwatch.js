@@ -9,7 +9,7 @@ const leftmark_rules = [
     { regex: /__(.*?)__/g, replace: "<u>$1</u>" },
     { regex: /~~(.*?)~~/g, replace: "<s>$1</s>" },
     { regex: /\*(.*?)\*/g, replace: "<em>$1</em>" },
-    { regex: /\[(.*?)\]\((.*?)\)/g, replace: `<a href = "$2">$1</a>` }
+    { regex: /\[(.*?)\]\((.*?)\)/g, replace: `<a href = "$2" target = "_blank" rel = "noreferrer">$1</a>` }
 ];
 
 function leftmark(content) {
@@ -88,7 +88,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
             // Construct text/attachment
             let attachment = message.text, classlist = "message-content";
             if (attachment.match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
-                attachment = `<img src = "${attachment}">`;
+                attachment = `<img src = "https://${address}/proxy/${attachment.slice(8)}">`;
                 classlist += " has-image";
             } else {
 

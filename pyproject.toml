@@ -28,6 +28,7 @@ dependencies = [
     "nanoid>=2.0.0",
     "orjson>=3.10.11",
     "readchar>=4.2.1",
+    "requests>=2.32.3",
     "urwid>=2.6.16",
     "websockets>=14.1",
 ]
