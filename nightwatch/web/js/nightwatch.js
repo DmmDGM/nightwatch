@@ -3,6 +3,19 @@
 import ConnectionManager from "./flows/connection.js";
 import { main, grab_data } from "./flows/welcome.js";
 
+// Leftmark :3
+const leftmark_rules = [
+    { regex: /\*\*(.*?)\*\*/g, replace: "<strong>$1</strong>" },
+    { regex: /__(.*?)__/g, replace: "<u>$1</u>" },
+    { regex: /~~(.*?)~~/g, replace: "<s>$1</s>" },
+    { regex: /\*(.*?)\*/g, replace: "<em>$1</em>" },
+    { regex: /\[(.*?)\]\((.*?)\)/g, replace: `<a href = "$2">$1</a>` }
+];
+
+function leftmark(content) {
+    return leftmark_rules.reduce((output, rule) => output.replace(rule.regex, rule.replace), content);
+}
+
 // Couple constants
 const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
@@ -80,11 +93,15 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
             } else {
 
                 // Clean attachment for the love of god
-                attachment = attachment.replace(/&/g, "&amp;")
+                const cleaned = attachment.replace(/&/g, "&amp;")
                                 .replace(/</g, "&lt;")
                                 .replace(/>/g, "&gt;")
                                 .replace(/"/g, "&quot;")
                                 .replace(/"/g, "&#039;");
+                
+                // Apply leftmark
+                attachment = leftmark(cleaned);
+                if (cleaned !== attachment) attachment = `<span>${attachment}</span>`;
             };
 
             // Construct message
