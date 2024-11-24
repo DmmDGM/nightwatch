@@ -30,7 +30,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                     <div class = "chat"></div>
                     <div class = "input-box">
                         <input type = "text" id = "actual-input" placeholder = "Share some thoughts...">
-                        <button>Send</button>
+                        <button>Send →</button>
                     </div>
                 </div>
                 <div class = "sidebar">
