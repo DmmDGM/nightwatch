@@ -11,7 +11,7 @@ class WelcomeHandler {
                 placeholder: "John Wick",
                 use_default: false
             },
-            color: {
+            hex: {
                 prompt: "Please, pick a user color:",
                 placeholder: "126bf1",
                 use_default: false
@@ -54,7 +54,7 @@ class WelcomeHandler {
         main.querySelector("button:not([data-item])").innerText = item === "address" ? "Connect" : "Next";
 
         // Handle fancy animations for color
-        if (this.current_item === "color") {
+        if (this.current_item === "hex") {
             this.input.addEventListener("keyup", (e) => {
                 const hex_code = e.currentTarget.value;
                 e.currentTarget.style.borderColor = `#${hex_code}`;
@@ -67,7 +67,7 @@ class WelcomeHandler {
             <h3>Nightwatch</h3>
             <div class = "tabs">
                 <button data-item = "username">Username</button>
-                <button data-item = "color">Color</button>
+                <button data-item = "hex">Color</button>
                 <button data-item = "address">Address</button>
             </div>
             <hr>

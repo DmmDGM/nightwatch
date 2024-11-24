@@ -66,9 +66,9 @@ class MembersCommand(BaseCommand):
 
     def on_execute(self, args: list[str]) -> None:
         def members_callback(response: dict):
-            self.print(", ".join(response["data"]["list"]))
+            self.print(", ".join(user['name'] for user in response["data"]["user-list"]))
 
-        self.ui.websocket.callback({"type": "members"}, members_callback)
+        self.ui.websocket.callback({"type": "user-list"}, members_callback)
 
 class AdminsCommand(BaseCommand):
     def __init__(self, *args) -> None:
@@ -76,12 +76,12 @@ class AdminsCommand(BaseCommand):
 
     def on_execute(self, args: list[str]) -> None:
         def admins_callback(response: dict):
-            if not response["data"]["list"]:
+            if not response["data"]["admin-list"]:
                 return self.print("There are no connected admins.")
 
-            self.print(f"Connected admins: {', '.join(response['data']['list'])}")
+            self.print(f"Connected admins: {', '.join(admin['name'] for admin in response['data']['admin-list'])}")
 
-        self.ui.websocket.callback({"type": "admins"}, admins_callback)
+        self.ui.websocket.callback({"type": "admin-list"}, admins_callback)
 
 class AdminCommand(BaseCommand):
     def __init__(self, *args) -> None:
