@@ -33,11 +33,19 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                         <button>Send</button>
                     </div>
                 </div>
-                <div class = "member-list">
-                    <p id = "server-name">K4ffu's Nightwatch Server</p>
-                    <button id = "leave">LEAVE SERVER</button>
+                <div class = "sidebar">
+                    <div class = "server-data">
+                        <p id = "server-name"></p>
+                        <button id = "leave">LEAVE SERVER</button>
+                    </div>
                     <hr>
-                    <p>Current member list:</p>
+                    <div class = "member-list">
+                        <p>Current member list:</p>
+                    </div>
+                    <hr>
+                    <div class = "user-data">
+                        <p>Connected as <span style = "color: #${color};">${username}</span>.</p>
+                    </div>
                 </div>
             `;
 
@@ -66,7 +74,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
 
             // Construct text/attachment
             let attachment = message.text, classlist = "message-content";
-            if (attachment.match(/^https:\/\/[\w\d./-]+.(?:avif|png|jpg|jpeg|webp|ico)$/)) {
+            if (attachment.match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)$/)) {
                 attachment = `<img src = "${attachment}">`;
                 classlist += " has-image";
             } else {

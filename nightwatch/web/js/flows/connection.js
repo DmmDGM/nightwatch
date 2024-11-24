@@ -7,10 +7,11 @@ export default class ConnectionManager {
         this.callbacks = callbacks;
 
         // Handle host and port
-        const [ host, port ] = address.split(":");
+        let [ host, port ] = address.split(":");
+        port = port ? Number(port) : 443;
 
         // Handle websocket connection
-        this.websocket = new WebSocket(`ws${port === '443' ? 's' : ''}://${host}:${port || 443}/gateway`);
+        this.websocket = new WebSocket(`ws${port === 443 ? 's' : ''}://${host}:${port}/gateway`);
         this.websocket.addEventListener("open", () => {
             this.websocket.addEventListener("message", (e) => this.#on_message(e));
             this.callbacks.on_connect();

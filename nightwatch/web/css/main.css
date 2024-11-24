@@ -50,11 +50,11 @@ button {
     border: 1px solid white;
     padding: 10px;
     cursor: pointer;
-    transition: background-color .5s ease;
+    transition: border-color .5s ease;
     background-color: transparent;
 }
 button:hover {
-    background-color: #181818;
+    border-color: #bbbbbb;
 }
 input {
     border: 1px solid white;
@@ -129,21 +129,6 @@ div.chat-input {
     flex-direction: column;
     width: 80%;
 }
-div.member-list {
-    gap: 10px;
-    width: 20%;
-    padding-top: 10px;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid white;
-}
-div.member-list > span {
-    margin-left: 10px;
-}
-div.member-list > button {
-    margin-bottom: 10px;
-}
 div.chat {
     padding: 10px;
     height: calc(100% - 40px);
@@ -158,6 +143,30 @@ div.input-box {
 #actual-input {
     width: 100%;
 }
-#server-name {
-    align-self: center;
+
+/* Handle sidebar */
+div.sidebar {
+    gap: 15px;
+    width: 20%;
+    padding-top: 10px;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid white;
+}
+div.sidebar > * {
+    display: flex;
+    flex-direction: column;
+}
+div.member-list {
+    flex: 1;
+}
+div.member-list > span {
+    margin-left: 10px;
+}
+div.server-data {
+    gap: 10px;
+}
+div.user-data, #server-name {
+    text-align: center;
 }
