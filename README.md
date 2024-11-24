@@ -43,7 +43,10 @@ server {
     ssl_certificate_key /etc/ssl/nightwatch.key;
 
     # Setup location
-    server_name nightwatch.iipython.dev;v
+    server_name nightwatch.iipython.dev;
+    location /proxy {
+        proxy_pass http://192.168.0.1:8000;
+    }
     location /gateway {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection upgrade;

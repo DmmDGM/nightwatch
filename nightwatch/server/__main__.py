@@ -31,7 +31,7 @@ def proxy_handler(connection, request):
             return connection.respond(HTTPStatus.BAD_REQUEST, "Nightwatch: Specified URI is incorrect.\n")
 
         paths = url.split("/")
-        if len(paths) < 2 or "." not in paths[-1] or paths[-1].split(".")[-1] not in PROXY_ALLOWED_SUFFIX:
+        if ".." in url or len(paths) < 2 or "." not in paths[-1] or paths[-1].split(".")[-1] not in PROXY_ALLOWED_SUFFIX:
             return connection.respond(HTTPStatus.BAD_REQUEST, "Nightwatch: Specified URI is incorrect.\n")
 
         log.info("proxy", f"Proxying to https://{url}")
@@ -46,7 +46,7 @@ def proxy_handler(connection, request):
 
                 return Response(response.status_code, "OK", Headers([
                     (k, v)
-                    for k, v in response.headers.items()
+                    for k, v in response.headers.items() if k in ["Content-Type", "Content-Length", "Cache-Control"]
                 ]), data)
 
         except RequestException:
