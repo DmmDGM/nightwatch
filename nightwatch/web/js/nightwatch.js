@@ -87,7 +87,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
 
             // Construct text/attachment
             let attachment = message.text, classlist = "message-content";
-            if (attachment.match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
+            if (attachment.toLowerCase().match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
                 attachment = `<img src = "https://${address}/proxy/${attachment.slice(8)}">`;
                 classlist += " has-image";
             } else {
