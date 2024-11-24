@@ -130,9 +130,10 @@ div.chat-input {
     width: 80%;
 }
 div.member-list {
-    gap: 5px;
+    gap: 10px;
     width: 20%;
-    padding: 10px;
+    padding-top: 10px;
+    padding-left: 20px;
     display: flex;
     flex-direction: column;
     border-left: 1px solid white;
@@ -156,4 +157,7 @@ div.input-box {
 }
 #actual-input {
     width: 100%;
+}
+#server-name {
+    align-self: center;
 }

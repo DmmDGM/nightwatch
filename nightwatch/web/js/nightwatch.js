@@ -34,7 +34,9 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                     </div>
                 </div>
                 <div class = "member-list">
+                    <p id = "server-name">K4ffu's Nightwatch Server</p>
                     <button id = "leave">LEAVE SERVER</button>
+                    <hr>
                     <p>Current member list:</p>
                 </div>
             `;

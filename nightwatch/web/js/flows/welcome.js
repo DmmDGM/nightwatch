@@ -38,7 +38,7 @@ class WelcomeHandler {
     }
 
     render_item(item) {
-        if (!this.ensure_value()) return;
+        if (item !== "username" && !this.ensure_value()) return;
 
         // Save old data
         localStorage.setItem(this.current_item, this.input.value);

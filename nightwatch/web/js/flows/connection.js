@@ -21,7 +21,6 @@ export default class ConnectionManager {
 
     #on_message(event) {
         const data = JSON.parse(event.data);
-        console.log("[E]", data);
         if (data.callback in this.callbacks) {
             this.callbacks[data.callback](data.data);
             delete this.callbacks[data.callback];
@@ -33,14 +32,7 @@ export default class ConnectionManager {
                 break
 
             case "server":
-                this.callbacks.on_message({
-                    text: `Welcome to ${data.data.name}. There are ${data.data.online} user(s) online.`,
-                    user: {
-                        name: "Nightwatch",
-                        color: "555753"
-                    },
-                    time: Math.round(Date.now() / 1000)
-                });
+                document.getElementById("server-name").innerText = data.data.name;
                 break;
 
             case "join":
