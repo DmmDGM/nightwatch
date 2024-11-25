@@ -147,7 +147,7 @@ PROXY_ALLOWED_SUFFIX = ["avif", "avifs", "apng", "png", "jpeg", "jpg", "jfif", "
 @app.get("/api/fwd/{public_url:str}", response_model = None)
 async def forward_image(public_url: str) -> Response | JSONResponse:
     try:
-        new_url = f"https://{base64.b64decode(public_url, validate = True).decode('ascii').rstrip("/")}"
+        new_url = f"https://{base64.b64decode(public_url, validate = True).decode('ascii').rstrip('/')}"
 
     except (binascii.Error, UnicodeDecodeError):
         return JSONResponse({"code": 400, "message": "Failed to contact the specified URI."}, status_code = 400)
