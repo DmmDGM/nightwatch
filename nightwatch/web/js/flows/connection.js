@@ -23,10 +23,6 @@ export default class ConnectionManager {
         this.websocket.addEventListener("open", async () => {
             this.websocket.addEventListener("message", (e) => this.#on_message(e));
             this.callbacks.on_connect();
-
-            // Reload user list
-            const users = (await this.send({ type: "user-list" }, true))["user-list"];
-            for (const user of users) this.callbacks.handle_member("join", user);
         });
         this.websocket.addEventListener("close", _ => console.warn("Connection closed"));
         this.websocket.addEventListener("error", e => console.error(e));
@@ -62,16 +58,14 @@ export default class ConnectionManager {
 
             case "rics-info":
                 document.getElementById("server-name").innerText = data.name;
+                for (const message of data["message-log"]) this.callbacks.on_message(message);
+                for (const user of data["user-list"]) this.callbacks.handle_member("join", user);
                 break;
 
             case "join":
             case "leave":
                 this.callbacks.handle_member(type, data.user);
                 break
-
-            case "message-log":
-                for (const message of data) this.callbacks.on_message(message);
-                break;
 
             case "problem":
                 console.warn({ type, data });

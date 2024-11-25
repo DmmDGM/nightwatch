@@ -46,14 +46,15 @@ app.state.broadcast = broadcast
 class Client:
     def __init__(self, websocket: WebSocket, user_data) -> None:
         self.websocket = websocket
-        self.username, self.hex_code = user_data["username"], user_data["hex"]
+        self.username, self.hex_code, self.admin = user_data["username"], user_data["hex"], False
+
+        self._callback = None
 
         # Attach to client list
-        self.admin = False
         app.state.clients[self.username] = self
 
-    def serialize(self) -> dict[str, str]:
-        return {"name": self.username, "hex": self.hex_code}
+    def serialize(self) -> dict[str, str | bool]:
+        return {"name": self.username, "hex": self.hex_code, "admin": self.admin}
 
     def cleanup(self) -> None:
         del app.state.clients[self.username]
@@ -64,6 +65,10 @@ class Client:
             return
 
         try:
+            if self._callback is not None:
+                payload["data"] = payload.get("data", {}) | {"callback": self._callback}
+                self._callback = None
+
             await self.websocket.send_json(payload)
 
         except WebSocketDisconnect:
@@ -71,7 +76,14 @@ class Client:
 
     async def receive(self) -> typing.Any:
         try:
-            return await self.websocket.receive_json()
+            data = await self.websocket.receive_json()
+
+            # Handle callback
+            callback = data.get("data", {}).get("callback")
+            if isinstance(callback, str):
+                self._callback = callback
+
+            return data
 
         except WebSocketDisconnect:
             return None
@@ -112,8 +124,11 @@ async def connect_endpoint(
     client = Client(websocket, user_data)
 
     # Get the client up to speed
-    await client.send({"type": "rics-info", "data": {"name": config["name"] or "Nightwatch Server"}})
-    await client.send({"type": "message-log", "data": app.state.message_log})
+    await client.send({"type": "rics-info", "data": {
+        "name": config["name"] or "Nightwatch Server",
+        "message-log": app.state.message_log,
+        "user-list": [client.serialize() for client in app.state.clients.values()]
+    }})
 
     # Broadcast join
     await app.state.broadcast({"type": "join", "data": {"user": client.serialize()}})
@@ -125,10 +140,9 @@ async def connect_endpoint(
             case {"type": "message", "data": {"message": message}}:
                 await app.state.broadcast({"type": "message", "data": {"user": client.serialize(), "message": message}})
 
-            case {"type": "user-list" | "admin-list" as type, "data": {"callback": callback}}:
+            case {"type": "user-list", "data": _}:
                 await client.send({"type": "response", "data": {
-                    type: [client.serialize() for client in app.state.clients.values() if type != "admin-list" or client.admin],
-                    "callback": callback
+                    "user-list": [client.serialize() for client in app.state.clients.values()]
                 }})
 
             case _:
