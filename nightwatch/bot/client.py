@@ -5,6 +5,7 @@ import asyncio
 from typing import Callable
 
 import orjson
+import requests
 from websockets import connect
 
 from .types import User, Message
@@ -15,7 +16,7 @@ class Context:
         self.socket, self.message = socket, message
 
     async def send(self, message: str) -> None:
-        await self.socket.send(orjson.dumps({"type": "message", "data": {"text": message}}), text = True)
+        await self.socket.send(orjson.dumps({"type": "message", "data": {"message": message}}), text = True)
 
     async def reply(self, message: str) -> None:
         await self.send(f"[↑ {self.message.user.name}] {message}")
@@ -31,9 +32,9 @@ class Client:
         self._on_message: Callable | None = None
 
     # Handle user data
-    def setup_profile(self, username: str, color: str) -> None:
-        """Initialize the user profile with the given username and color."""
-        self.user = {"name": f"[BOT] {username}", "color": color}
+    def setup_profile(self, username: str, hex: str) -> None:
+        """Initialize the user profile with the given username and hex."""
+        self.user = {"username": f"[BOT] {username}", "hex": hex}
 
     # Main event loop
     async def _loop(self) -> None:
@@ -44,13 +45,10 @@ class Client:
             # Handle all the different types
             match payload["type"]:
                 case "message":
-                    if data.get("history") is True:
-                        continue  # Ignore history messages
-
                     if self._on_message is not None:
                         message = Message(
                             User(*data["user"].values()),
-                            data["text"]
+                            data["message"]
                         )
                         await self._on_message(
                             Context(self.socket, message),
@@ -72,12 +70,15 @@ class Client:
         address_parts = address.split(":")
         host, port = address_parts[0], 443 if len(address_parts) == 1 else int(address_parts[1])
 
+        # Send authorization request
+        protocol, url = "s" if port == 443 else "", f"{host}:{port}"
+        authorization = requests.post(f"http{protocol}://{url}/api/join", json = self.user).json()["authorization"]
+
         # Connect to websocket gateway
-        async with connect(f"ws{'s' if port == 443 else ''}://{host}:{port}/gateway") as socket:
+        async with connect(f"ws{protocol}://{url}/api/ws?authorization={authorization}") as socket:
             self.socket = socket
 
             # Handle events
-            await self.send("identify", **self.user)
             if self._connected is not None:
                 await self._connected()
 
