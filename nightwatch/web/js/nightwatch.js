@@ -86,7 +86,8 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                 // Construct text/attachment
                 let attachment = message.message, classlist = "message-content";
                 if (attachment.toLowerCase().match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
-                    attachment = `<img src = "http${connection.protocol}://${address}/api/fwd/${btoa(attachment.slice(8))}">`;
+                    const url = `http${connection.protocol}://${address}/api/fwd/${btoa(attachment.slice(8))}`;
+                    attachment = `<a href = "${url}" target = "_blank"><img src = "${url}"></a>`;
                     classlist += " has-image";
                 } else {
 

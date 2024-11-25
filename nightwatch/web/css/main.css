@@ -104,7 +104,7 @@ input:hover {
     padding-bottom: 5px;
 }
 .message-content > img {
-    max-width: 300px;
+    max-width: 640px;
 }
 .timestamp {
     margin-left: auto;
