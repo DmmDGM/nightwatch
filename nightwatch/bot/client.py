@@ -8,17 +8,20 @@ import orjson
 import requests
 from websockets import connect
 
-from .types import User, Message
+from .types import User, Message, Server
 
 # Context
 class Context:
-    def __init__(self, socket, message: Message) -> None:
-        self.socket, self.message = socket, message
+    def __init__(self, socket, message: Message | None, server: Server) -> None:
+        self.socket, self.message, self.server = socket, message, server
 
     async def send(self, message: str) -> None:
         await self.socket.send(orjson.dumps({"type": "message", "data": {"message": message}}), text = True)
 
     async def reply(self, message: str) -> None:
+        if self.message is None:
+            raise RuntimeError("Cannot reply to a context with no message information!")
+
         await self.send(f"[↑ {self.message.user.name}] {message}")
 
     async def run_command(self, command: str, data: dict) -> dict:
@@ -28,32 +31,12 @@ class Context:
 # Main client class
 class Client:
     def __init__(self) -> None:
-        self._connected: Callable | None = None
-        self._on_message: Callable | None = None
+        self.callbacks: dict[str, Callable] = {}
 
     # Handle user data
     def setup_profile(self, username: str, hex: str) -> None:
         """Initialize the user profile with the given username and hex."""
         self.user = {"username": f"[BOT] {username}", "hex": hex}
-
-    # Main event loop
-    async def _loop(self) -> None:
-        while self.socket:
-            payload = orjson.loads(await self.socket.recv())
-            data = payload.get("data", {})
-
-            # Handle all the different types
-            match payload["type"]:
-                case "message":
-                    if self._on_message is not None:
-                        message = Message(
-                            User(*data["user"].values()),
-                            data["message"]
-                        )
-                        await self._on_message(
-                            Context(self.socket, message),
-                            message
-                        )
 
     async def send(self, type: str, **data) -> None:
         """Send the given type and payload to the server."""
@@ -76,13 +59,29 @@ class Client:
 
         # Connect to websocket gateway
         async with connect(f"ws{protocol}://{url}/api/ws?authorization={authorization}") as socket:
-            self.socket = socket
+            self.socket, self.server = socket, None
+            while socket:
+                match orjson.loads(await socket.recv()):
+                    case {"type": "rics-info", "data": {"name": name, "message-log": message_log, "user-list": user_list}}:
+                        self.server = Server(url, name, [User(**user) for user in user_list])
+                        if "connected" in self.callbacks:
+                            await self.callbacks["connected"](Context(socket, None, self.server))
 
-            # Handle events
-            if self._connected is not None:
-                await self._connected()
+                        if "message-log" in self.callbacks:
+                            await self.callbacks["message-log"](
+                                Context(socket, None, self.server),
+                                [Message.from_payload(message) for message in message_log]
+                            )
 
-            await self._loop()
+                    case {"type": "message", "data": payload} if self.server and "message" in self.callbacks:
+                        message = Message(**payload)
+                        await self.callbacks["message"](Context(socket, message, self.server), message)
+
+                    case {"type": "join", "data": {"user": user, "time": _}} if self.server and "join" in self.callbacks:
+                        await self.callbacks["join"](Context(socket, None, self.server), User.from_payload(user))
+
+                    case {"type": "leave", "data": {"user": user, "time": _}} if self.server and "leave" in self.callbacks:
+                        await self.callbacks["leave"](Context(socket, None, self.server), User.from_payload(user))
 
     def run(self, address: str) -> None:
         """Passthrough method to run :client.connect: asynchronously and start the event loop.
@@ -90,10 +89,9 @@ class Client:
         asyncio.run(self.connect(address))
 
     # Handle event connections
-    def connected(self, func: Callable) -> None:
-        """Attach a listener to the :connected: event."""
-        self._connected = func
+    def event(self, event_name: str) -> Callable:
+        """Attach a listener to a specific Nightwatch event."""
+        def internal_callback(func: Callable) -> None:
+            self.callbacks[event_name] = func
 
-    def on_message(self, func: Callable) -> None:
-        """Attach a listener to the :on_message: event."""
-        self._on_message = func
+        return internal_callback

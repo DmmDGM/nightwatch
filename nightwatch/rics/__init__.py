@@ -33,7 +33,7 @@ async def broadcast(payload: dict) -> None:
     payload["data"]["time"] = round(time())
     if payload["type"] == "message":
         if "user" not in payload["data"]:
-            payload["data"]["user"] = {"name": "Nightwatch", "hex": "555753"}
+            payload["data"]["user"] = {"name": "Nightwatch", "hex": "555753", "admin": False}
 
         app.state.message_log = app.state.message_log[-24:] + [payload["data"]]
 
