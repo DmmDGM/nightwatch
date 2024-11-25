@@ -97,7 +97,7 @@ input:hover {
     border-left: 1px solid white;
     padding-left: 10px;
     overflow-x: hidden;
-    max-width: calc(100% - 80px);
+    max-width: calc(100% - 300px);
 }
 .message-content.has-image {
     padding-top: 5px;

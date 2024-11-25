@@ -5,6 +5,7 @@ import base64
 import typing
 import binascii
 from time import time
+from json import JSONDecodeError
 from secrets import token_urlsafe
 
 from requests import Session, RequestException
@@ -38,6 +39,9 @@ async def broadcast(payload: dict) -> None:
         app.state.message_log = app.state.message_log[-24:] + [payload["data"]]
 
     for client in app.state.clients.values():
+        if client.websocket.client_state != WebSocketState.CONNECTED:
+            continue
+
         await client.send(payload)
 
 app.state.broadcast = broadcast
@@ -85,8 +89,16 @@ class Client:
 
             return data
 
+        except KeyError:
+            await self.websocket.close(1002, "Nightwatch uses text frames, binary frames are rejected.")
+
+        except JSONDecodeError:
+            await self.websocket.close(1002, "Nightwatch requires all packets to be sent using JSON, non-JSON is rejected.")
+
         except WebSocketDisconnect:
-            return None
+            pass
+
+        return None
 
 class ClientJoinModel(BaseModel):
     username: str = Field(..., min_length = 3, max_length = 30)
@@ -157,12 +169,15 @@ async def connect_endpoint(
                     "user-list": [client.serialize() for client in app.state.clients.values()]
                 }})
 
+            case None:
+                break
+
             case _:
                 await client.send({"type": "problem", "data": {"message": "Invalid payload received."}})
 
+    client.cleanup()
     await app.state.broadcast({"type": "leave", "data": {"user": client.serialize()}})
     await app.state.broadcast({"type": "message", "data": {"message": f"{client.username} has left the server."}})
-    client.cleanup()
 
 # Handle image forwarding
 SESSION = Session()
