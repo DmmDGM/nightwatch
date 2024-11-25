@@ -106,7 +106,7 @@ async def route_index(client: ClientJoinModel) -> JSONResponse:
             "message": "Requested username has whitespace that should be removed prior to joining."
         }, status_code = 400)
 
-    if client.username in ["nightwatch", "admin", "moderator"]:
+    if client.username.lower() in ["nightwatch", "admin", "moderator"]:
         return JSONResponse({
             "code": 400,
             "message": "Requested username is restricted for use."
