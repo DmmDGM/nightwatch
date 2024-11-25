@@ -2,7 +2,6 @@
 
 # Modules
 import base64
-from hmac import new
 import typing
 import binascii
 from time import time
