@@ -100,6 +100,18 @@ async def route_index(client: ClientJoinModel) -> JSONResponse:
             "message": "Requested username is in use on this server."
         }, status_code = 400)
 
+    if client.username.strip() != client.username:
+        return JSONResponse({
+            "code": 400,
+            "message": "Requested username has whitespace that should be removed prior to joining."
+        }, status_code = 400)
+
+    if client.username in ["nightwatch", "admin", "moderator"]:
+        return JSONResponse({
+            "code": 400,
+            "message": "Requested username is restricted for use."
+        }, status_code = 400)
+
     client_token = token_urlsafe()
     app.state.pending_clients[client_token] = client.model_dump()
     return JSONResponse({
