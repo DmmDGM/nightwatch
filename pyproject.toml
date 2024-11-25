@@ -45,4 +45,4 @@ Homepage = "https://github.com/iiPythonx/nightwatch"
 Issues = "https://github.com/iiPythonx/nightwatch/issues"
 
 [project.scripts]
-nightwatch = "nightwatch.__main__:main"
+nightwatch = "nightwatch.client.__main__:main"

@@ -4,7 +4,7 @@
 from typing import Callable
 
 from nightwatch import __version__
-from nightwatch.config import fetch_config
+from nightwatch.client import config
 
 # Main class
 class BaseCommand():
@@ -47,7 +47,7 @@ class ConfigCommand(BaseCommand):
         elif len(args) < 2:
             return self.print(f"Missing the value to assign to '{args[0]}'.")
 
-        fetch_config("config").set(args[0], args[1])
+        config.set(args[0], args[1])
         self.print(f"{args[0]} has been set to \"{args[1]}\".")
 
 class HelpCommand(BaseCommand):

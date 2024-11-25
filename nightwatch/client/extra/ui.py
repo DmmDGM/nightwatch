@@ -13,7 +13,7 @@ from .commands import commands
 from .wswrap import ORJSONWebSocket
 from ..vendor.scroll import Scrollable, ScrollBar
 
-from nightwatch.config import fetch_config
+from nightwatch.client import config
 
 # Input edit class
 class InputEdit(urwid.Edit):
@@ -71,7 +71,7 @@ class NightwatchUI():
         visible_author = author if author != self.last_author else " " * self.length(author)
         now, time_string = datetime.now(), ""
         if (author != self.last_author) or ((now - self.last_time).total_seconds() > 300):
-            time_string = now.strftime("%I:%M %p" if fetch_config("config")["client.time_format"] != "24h" else "%H:%M") + "  "  # Right padding for the scrollbar
+            time_string = now.strftime("%I:%M %p" if config["client.time_format"] != "24h" else "%H:%M") + "  "  # Right padding for the scrollbar
 
         self.pile.contents.append((urwid.Columns([
             (self.length(visible_author), urwid.Text((user_color, visible_author))),
