@@ -2,6 +2,7 @@
 
 # Modules
 import base64
+from hmac import new
 import typing
 import binascii
 from time import time
@@ -150,6 +151,13 @@ async def forward_image(public_url: str) -> Response | JSONResponse:
 
     except (binascii.Error, UnicodeDecodeError):
         return JSONResponse({"code": 400, "message": "Failed to contact the specified URI."}, status_code = 400)
+
+    filename = new_url.split("?")[0].split("/")[-1]
+    if "." not in filename:
+        return JSONResponse({"code": 400, "message": "Specified URI does not have an extension."}, status_code = 400)
+
+    if filename.split(".")[-1] not in PROXY_ALLOWED_SUFFIX:
+        return JSONResponse({"code": 400, "message": "Specified URI has an unsupported extension."}, status_code = 400)
 
     try:
         data = b""
