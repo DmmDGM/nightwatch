@@ -81,13 +81,12 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
 
                 // Check for anything hidden
                 const hide_author = message.user.name === last_author;
-                const hide_time = !hide_author ? false : current_time === last_time;
                 last_author = message.user.name, last_time = current_time;
 
                 // Construct text/attachment
                 let attachment = message.message, classlist = "message-content";
                 if (attachment.toLowerCase().match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
-                    attachment = `<img src = "https://${address}/proxy/${attachment.slice(8)}">`;
+                    attachment = `<img src = "http${connection.protocol}://${address}/api/fwd/${btoa(attachment.slice(8))}">`;
                     classlist += " has-image";
                 } else {
 
@@ -109,7 +108,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                 element.innerHTML = `
                     <span style = "color: #${message.user.hex};${hide_author ? 'color: transparent;' : ''}">${message.user.name}</span>
                     <span class = "${classlist}">${attachment}</span>
-                    <span class = "timestamp"${hide_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
+                    <span class = "timestamp"${current_time === last_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
                 `;
 
                 // Push message and autoscroll

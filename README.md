@@ -29,7 +29,7 @@ git clone https://github.com/iiPythonx/nightwatch && cd nightwatch
 git checkout release
 uv venv
 uv pip install -e .
-HOST=0.0.0.0 python3 -m nightwatch.server
+uvicorn nightwatch.rics:app --host 0.0.0.0
 ```
 
 An example NGINX configuration:
@@ -44,14 +44,14 @@ server {
 
     # Setup location
     server_name nightwatch.iipython.dev;
-    location /proxy {
+    location /api {
         proxy_pass http://192.168.0.1:8000;
         proxy_http_version 1.1;
     }
-    location /gateway {
+    location /api/ws {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection upgrade;
-        proxy_pass http://192.168.0.1:8000/gateway;
+        proxy_pass http://192.168.0.1:8000/api/ws;
         proxy_http_version 1.1;
     }
 }

@@ -1,13 +1,17 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import base64
 import typing
+import binascii
 from time import time
 from secrets import token_urlsafe
 
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import JSONResponse
+from requests import Session, RequestException
 from pydantic import BaseModel, Field
+
+from fastapi import FastAPI, Response, WebSocket
+from fastapi.responses import JSONResponse
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 from nightwatch.config import fetch_config
@@ -133,3 +137,37 @@ async def connect_endpoint(
     await app.state.broadcast({"type": "leave", "data": {"user": client.serialize()}})
     await app.state.broadcast({"type": "message", "data": {"message": f"{client.username} has left the server."}})
     client.cleanup()
+
+# Handle image forwarding
+SESSION = Session()
+PROXY_SIZE_LIMIT = 10 * (1024 ** 2)
+PROXY_ALLOWED_SUFFIX = ["avif", "avifs", "apng", "png", "jpeg", "jpg", "jfif", "webp", "ico", "gif", "svg"]
+
+@app.get("/api/fwd/{public_url:str}", response_model = None)
+async def forward_image(public_url: str) -> Response | JSONResponse:
+    try:
+        new_url = f"https://{base64.b64decode(public_url, validate = True).decode('ascii').rstrip("/")}"
+
+    except (binascii.Error, UnicodeDecodeError):
+        return JSONResponse({"code": 400, "message": "Failed to contact the specified URI."}, status_code = 400)
+
+    try:
+        data = b""
+        with SESSION.get(new_url, stream = True) as response:
+            response.raise_for_status()
+            for chunk in response.iter_content(PROXY_SIZE_LIMIT):
+                data += chunk
+                if len(data) >= PROXY_SIZE_LIMIT:
+                    return JSONResponse({"code": 400, "message": "Specified URI contains data above size limit."}, status_code = 400)
+
+            return Response(
+                data,
+                response.status_code,
+                {
+                    k: v
+                    for k, v in response.headers.items() if k in ["Content-Type", "Content-Length", "Cache-Control"]
+                }
+            )
+
+    except RequestException:
+        return JSONResponse({"code": 400, "message": "Failed to contact the specified URI."}, status_code = 400)
