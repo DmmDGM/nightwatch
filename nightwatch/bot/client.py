@@ -17,6 +17,7 @@ class AuthorizationFailed(Exception):
 
 # Handle state
 class ClientState:
+    """The current client state. Includes data such as the user list, chat logs, and websocket connection."""
     def __init__(self) -> None:
         self.user_list: list[User]
         self.chat_logs: list[Message]
@@ -24,6 +25,7 @@ class ClientState:
         self.socket   : ClientConnection
 
 class Context:
+    """An object to store data about the current event context."""
     def __init__(
         self,
         state: ClientState,
@@ -54,21 +56,26 @@ class Context:
 
 # Main client class
 class Client:
+    """The main client class, override events on this class and call :run: to start the client."""
     def __init__(self) -> None:
         self.__state = ClientState()
         self.__session = requests.Session()
 
     # Events (for overwriting)
     async def on_connect(self, ctx: Context) -> None:
+        """Listen to the :connect: event."""
         pass
 
     async def on_message(self, ctx: Context) -> None:
+        """Listen to the :message: event."""
         pass
 
     async def on_join(self, ctx: Context) -> None:
+        """Listen to the :join: event."""
         pass
 
     async def on_leave(self, ctx: Context) -> None:
+        """Listen to the :leave: event."""
         pass
 
     # Handle running

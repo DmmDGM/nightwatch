@@ -28,9 +28,13 @@ def from_dict(cls: typing.Type[T], data: dict) -> T:
 @dataclass
 class User:
     name: str
+    """The name of this user."""
     hex: str
+    """The hex color code of this user, without a leading hashtag."""
     admin: bool
+    """Status of whether or not this user is an admin."""
     bot: bool
+    """Status of whether or not this user is a bot."""
 
     def __repr__(self) -> str:
         return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin} bot={self.bot}>"
@@ -38,8 +42,11 @@ class User:
 @dataclass
 class Message:
     user: User
+    """The :User: object who sent this message."""
     message: str
+    """The raw text content of this message."""
     time: int
+    """The time this message was sent in seconds since the epoch."""
 
     def __repr__(self) -> str:
         return f"<Message user='{self.user}' message='{self.message}' time={self.time}>"
@@ -47,8 +54,12 @@ class Message:
 @dataclass
 class RicsInfo:
     name: str
+    """The name of the RICS server we are connected to."""
     users: list[User]
+    """List of :User: objects that are connected to this server."""
     chat_logs: list[Message]
+    """List of :Message: objects consisting of chat logs.
+    This will be the last 25 messages sent if you just joined, otherwise it will build over time."""
 
     def __repr__(self) -> str:
         return f"<RicsInfo name='{self.name}' users=[...] chat_logs=[...]>"
