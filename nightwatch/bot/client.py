@@ -3,61 +3,13 @@
 # Modules
 import typing
 import asyncio
-from dataclasses import dataclass, fields, is_dataclass
 
 import orjson
 import requests
 from websockets import connect
 from websockets.asyncio.client import ClientConnection
 
-# Typing
-T = typing.TypeVar("T")
-
-def from_dict(cls: typing.Type[T], data: dict) -> T:
-    if not is_dataclass(cls):
-        raise ValueError(f"{cls} is not a dataclass")
-
-    field_types = {f.name: f.type for f in fields(cls)}
-    instance_data = {}
-
-    for key, value in data.items():
-        if key in field_types:
-            field_type = field_types[key]
-            if is_dataclass(field_type) and isinstance(value, dict):
-                instance_data[key] = from_dict(field_type, value)  # type: ignore
-
-            else:
-                instance_data[key] = value
-
-    return cls(**instance_data)
-
-@dataclass
-class User:
-    name: str
-    hex: str
-    admin: bool
-    bot: bool
-
-    def __repr__(self) -> str:
-        return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin} bot={self.bot}>"
-
-@dataclass
-class Message:
-    user: User
-    message: str
-    time: int
-
-    def __repr__(self) -> str:
-        return f"<Message user='{self.user}' message='{self.message}' time={self.time}>"
-
-@dataclass
-class RicsInfo:
-    name: str
-    users: list[User]
-    chat_logs: list[Message]
-
-    def __repr__(self) -> str:
-        return f"<RicsInfo name='{self.name}' users=[...] chat_logs=[...]>"
+from .types import from_dict, User, Message, RicsInfo
 
 # Exceptions
 class AuthorizationFailed(Exception):
@@ -66,19 +18,10 @@ class AuthorizationFailed(Exception):
 # Handle state
 class ClientState:
     def __init__(self) -> None:
-        self.__state = {}
-
-        # Typing
         self.user_list: list[User]
         self.chat_logs: list[Message]
         self.rics_info: dict[str, str]
         self.socket   : ClientConnection
-
-    def __getitem__(self, key: str) -> typing.Any:
-        return self.__state.get(key)
-
-    def __setitem__(self, key: str, value: typing.Any) -> None:
-        self.__state[key] = value
 
 class Context:
     def __init__(
@@ -116,20 +59,16 @@ class Client:
         self.__session = requests.Session()
 
     # Events (for overwriting)
-    async def on_connect(self, ctx) -> None:
-        print(ctx)
-
-    async def on_message(self, ctx: Context) -> None:
-        if ctx.message.message == "fuck you":
-            await ctx.reply("FUCK YOU1!!!!!!!!!!!")
-
-        if ctx.message.message == "what":
-            await ctx.send("test message")
-
-    async def on_join(self, ctx) -> None:
+    async def on_connect(self, _) -> None:
         pass
 
-    async def on_leave(self, ctx) -> None:
+    async def on_message(self, _) -> None:
+        pass
+
+    async def on_join(self, _) -> None:
+        pass
+
+    async def on_leave(self, _) -> None:
         pass
 
     # Handle running
@@ -148,11 +87,7 @@ class Client:
         try:
             response = self.__session.post(
                 f"http{protocol}://{host}:{port}/api/join",
-                json = {
-                    "username": username,
-                    "hex": hex,
-                    "bot": True
-                },
+                json = {"username": username, "hex": hex, "bot": True},
                 timeout = 5
             )
             response.raise_for_status()

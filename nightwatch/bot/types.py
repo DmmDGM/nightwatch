@@ -1,33 +1,54 @@
 # Copyright (c) 2024 iiPython
 
-from datetime import datetime
+# Modules
+import typing
+from dataclasses import dataclass, fields, is_dataclass
 
+# Typing
+T = typing.TypeVar("T")
+
+def from_dict(cls: typing.Type[T], data: dict) -> T:
+    if not is_dataclass(cls):
+        raise ValueError(f"{cls} is not a dataclass")
+
+    field_types = {f.name: f.type for f in fields(cls)}
+    instance_data = {}
+
+    for key, value in data.items():
+        if key in field_types:
+            field_type = field_types[key]
+            if is_dataclass(field_type) and isinstance(value, dict):
+                instance_data[key] = from_dict(field_type, value)  # type: ignore
+
+            else:
+                instance_data[key] = value
+
+    return cls(**instance_data)
+
+@dataclass
 class User:
-    def __init__(self, name: str, hex: str, admin: bool) -> None:
-        self.name, self.hex, self.admin = name, hex, admin
+    name: str
+    hex: str
+    admin: bool
+    bot: bool
 
     def __repr__(self) -> str:
-        return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin}>"
+        return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin} bot={self.bot}>"
 
-    @staticmethod
-    def from_payload(payload: dict):
-        return User(**payload)
-
+@dataclass
 class Message:
-    def __init__(self, user: dict, message: str, time: int | datetime) -> None:
-        self.user, self.text = User.from_payload(user), message
-        self.time = time if isinstance(time, datetime) else datetime.fromtimestamp(time)
+    user: User
+    message: str
+    time: int
 
     def __repr__(self) -> str:
-        return f"<Message user={self.user} text='{self.text}'>"
+        return f"<Message user='{self.user}' message='{self.message}' time={self.time}>"
 
-    @staticmethod
-    def from_payload(payload: dict):
-        return Message(**payload)
-
-class Server:
-    def __init__(self, address: str, name: str, users: list[User]) -> None:
-        self.address, self.name, self.users = address, name, users
+@dataclass
+class RicsInfo:
+    name: str
+    users: list[User]
+    chat_logs: list[Message]
 
     def __repr__(self) -> str:
-        return f"<Server address='{self.address}' name='{self.name}' users=[{','.join(str(u) for u in self.users)}]"
+        return f"<RicsInfo name='{self.name}' users=[...] chat_logs=[...]>"
