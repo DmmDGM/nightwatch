@@ -118,7 +118,7 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                 element.innerHTML = `
                     <span style = "color: #${message.user.hex};${hide_author ? 'color: transparent;' : ''}">${message.user.name}</span>
                     <span class = "${classlist}">${attachment}</span>
-                    <span class = "timestamp"${current_time === last_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
+                    <span class = "timestamp"${current_time !== last_time ? ' style="color: transparent;"' : ''}>${current_time}</span>
                 `;
 
                 // Push message and autoscroll

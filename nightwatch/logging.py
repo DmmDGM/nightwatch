@@ -4,7 +4,7 @@
 from nightwatch.config import config_path
 
 # Initialization
-class NightwatchLogger():
+class NightwatchLogger:
     def __init__(self) -> None:
         self._color_map = {
             "info": "34", "warn": "33", "error": "31", "critical": "31"

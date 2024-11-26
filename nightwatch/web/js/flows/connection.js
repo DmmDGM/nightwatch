@@ -37,7 +37,6 @@ export default class ConnectionManager {
                 body: JSON.stringify({ username, hex })
             }
         )).json();
-        console.log(`[Connection] Authorization code is ${response.authorization}`);
         
         // Establish websocket connection
         this.#connect(response.authorization);
@@ -45,7 +44,6 @@ export default class ConnectionManager {
 
     #on_message(event) {
         const { type, data } = JSON.parse(event.data);
-        console.log(`[!]`, { type, data });
         if (data.callback in this.callbacks) {
             this.callbacks[data.callback](data);
             delete this.callbacks[data.callback];

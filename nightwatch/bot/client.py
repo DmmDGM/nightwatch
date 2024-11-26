@@ -8,6 +8,7 @@ import orjson
 import requests
 from websockets import connect
 from websockets.asyncio.client import ClientConnection
+from websockets.exceptions import ConnectionClosed
 
 from .types import from_dict, User, Message, RicsInfo
 
@@ -16,6 +17,9 @@ class AuthorizationFailed(Exception):
     def __init__(self, message: str, json: dict | None = None) -> None:
         super().__init__(message)
         self.json = json
+
+class Disconnected(Exception):
+    pass
 
 # Handle state
 class ClientState:
@@ -155,10 +159,14 @@ class Client:
         host, port, protocol, auth = await self.__authorize(username, hex, address)
         self.user, self.address = User(username, hex, False, True), address
 
-        async with connect(f"{protocol}{host}:{port}/api/ws?authorization={auth}") as socket:
-            self.__state.socket = socket
-            while socket.state == 1:
-                await self.__match_event(orjson.loads(await socket.recv()))
+        try:
+            async with connect(f"{protocol}{host}:{port}/api/ws?authorization={auth}") as socket:
+                self.__state.socket = socket
+                while socket.state == 1:
+                    await self.__match_event(orjson.loads(await socket.recv()))
+
+        except ConnectionClosed:
+            raise Disconnected("RICS socket has been disconnected!")
 
     async def close(self) -> None:
         """Closes the websocket connection."""
