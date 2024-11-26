@@ -162,6 +162,10 @@ async def connect_endpoint(
     while websocket.application_state == WebSocketState.CONNECTED:
         match await client.receive():
             case {"type": "message", "data": {"message": message}}:
+                if not message.strip():
+                    await client.send({"type": "problem", "data": {"message": "You cannot send a blank message."}})
+                    continue
+
                 await app.state.broadcast({"type": "message", "data": {"user": client.serialize(), "message": message}})
 
             case {"type": "user-list", "data": _}:
@@ -182,7 +186,6 @@ async def connect_endpoint(
 # Handle image forwarding
 SESSION = Session()
 PROXY_SIZE_LIMIT = 10 * (1024 ** 2)
-PROXY_ALLOWED_SUFFIX = ["avif", "avifs", "apng", "png", "jpeg", "jpg", "jfif", "webp", "ico", "gif", "svg"]
 
 @app.get("/api/fwd/{public_url:str}", response_model = None)
 async def forward_image(public_url: str) -> Response | JSONResponse:
@@ -191,13 +194,6 @@ async def forward_image(public_url: str) -> Response | JSONResponse:
 
     except (binascii.Error, UnicodeDecodeError):
         return JSONResponse({"code": 400, "message": "Failed to contact the specified URI."}, status_code = 400)
-
-    filename = new_url.split("?")[0].split("/")[-1]
-    if "." not in filename:
-        return JSONResponse({"code": 400, "message": "Specified URI does not have an extension."}, status_code = 400)
-
-    if filename.split(".")[-1] not in PROXY_ALLOWED_SUFFIX:
-        return JSONResponse({"code": 400, "message": "Specified URI has an unsupported extension."}, status_code = 400)
 
     try:
         data = b""
@@ -213,7 +209,7 @@ async def forward_image(public_url: str) -> Response | JSONResponse:
                 response.status_code,
                 {
                     k: v
-                    for k, v in response.headers.items() if k in ["Content-Type", "Content-Length", "Cache-Control"]
+                    for k, v in response.headers.items() if k in ["Content-Type", "Cache-Control"]
                 }
             )
 

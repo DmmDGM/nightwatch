@@ -103,6 +103,10 @@ input:hover {
     padding-top: 5px;
     padding-bottom: 5px;
 }
+.message-content.has-image > span > a {
+    display: flex;
+    align-items: center;
+}
 .message-content > a > img {
     max-width: 500px;
 }

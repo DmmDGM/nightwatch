@@ -9,6 +9,7 @@ const leftmark_rules = [
     { regex: /__(.*?)__/g, replace: "<u>$1</u>" },
     { regex: /~~(.*?)~~/g, replace: "<s>$1</s>" },
     { regex: /\*(.*?)\*/g, replace: "<em>$1</em>" },
+    { regex: /\!\[(.*?)\]\((.*?)\)/g, replace: `<a href = "$2" target = "_blank"><img alt = "$1" src = "$2"></a>` },
     { regex: /\[(.*?)\]\((.*?)\)/g, replace: `<a href = "$2" target = "_blank" rel = "noreferrer">$1</a>` }
 ];
 
@@ -86,21 +87,29 @@ const NOTIFICATION_SFX = new Audio("/audio/notification.mp3");
                 // Construct text/attachment
                 let attachment = message.message, classlist = "message-content";
                 if (attachment.toLowerCase().match(/^https:\/\/[\w\d./-]+.(?:avifs?|a?png|jpe?g|jfif|webp|ico|gif|svg)(?:\?.+)?$/)) {
-                    const url = `http${connection.protocol}://${address}/api/fwd/${btoa(attachment.slice(8))}`;
-                    attachment = `<a href = "${url}" target = "_blank"><img src = "${url}"></a>`;
-                    classlist += " has-image";
-                } else {
+                    attachment = `![untitled](${attachment})`;
+                }
 
-                    // Clean attachment for the love of god
-                    const cleaned = attachment.replace(/&/g, "&amp;")
-                                    .replace(/</g, "&lt;")
-                                    .replace(/>/g, "&gt;")
-                                    .replace(/"/g, "&quot;")
-                                    .replace(/"/g, "&#039;");
-                    
-                    // Apply leftmark
-                    attachment = leftmark(cleaned);
-                    if (cleaned !== attachment) attachment = `<span>${attachment}</span>`;
+                // Clean attachment for the love of god
+                const cleaned = attachment.replace(/&/g, "&amp;")
+                                .replace(/</g, "&lt;")
+                                .replace(/>/g, "&gt;")
+                                .replace(/"/g, "&quot;")
+                                .replace(/"/g, "&#039;");
+                
+                // Apply leftmark
+                attachment = leftmark(cleaned);
+                if (cleaned !== attachment) {
+                    attachment = `<span>${attachment}</span>`;
+                    const dom = new DOMParser().parseFromString(attachment, "text/html");
+
+                    // Handle image adjusting
+                    const image = dom.querySelector("img");
+                    if (image) {
+                        classlist += " has-image";
+                        image.src = `http${connection.protocol}://${address}/api/fwd/${btoa(image.src.slice(8))}`;
+                        attachment = dom.body.innerHTML;
+                    };
                 };
 
                 // Construct message
