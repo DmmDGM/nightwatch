@@ -11,6 +11,10 @@ class NextgenerationBot(Client):
     async def on_message(self, ctx: Context) -> None:
         print(f"{ctx.user.name} sent '{ctx.message.message}'")
 
+    async def on_join(self, ctx: Context) -> None:
+        print(ctx.rics.name)
+        return await ctx.send(f"{ctx.user.name}, why the fuck would you join this place?")
+
 NextgenerationBot().run(
     username = "Next-gen Bot",
     hex = "ff0000",

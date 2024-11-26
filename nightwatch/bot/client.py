@@ -38,12 +38,15 @@ class Context:
             users = state.user_list,
             chat_logs = state.chat_logs
         )
+        """The RICS (Realtime Info and Communication System) server we are connected to."""
 
         if message is not None:
             self.message = message
+            """The message we just received. This will be None if this is accessed from anything other then :on_message:."""
 
         if user is not None:
             self.user = user
+            """The user who left or joined the server, or the author of the message we just received."""
 
     async def send(self, message: str) -> None:
         await self.state.socket.send(orjson.dumps({"type": "message", "data": {"message": message}}), text = True)
