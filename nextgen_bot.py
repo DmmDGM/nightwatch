@@ -15,5 +15,5 @@ class NextgenerationBot(Client):
 NextgenerationBot().run(
     username = "Next-gen Bot",
     hex = "ff0000",
-    address = "localhost:8000"
+    address = "nightwatch.k4ffu.dev"
 )

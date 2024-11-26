@@ -39,9 +39,6 @@ async def broadcast(payload: dict) -> None:
         app.state.message_log = app.state.message_log[-24:] + [payload["data"]]
 
     for client in app.state.clients.values():
-        if client.websocket.client_state != WebSocketState.CONNECTED:
-            continue
-
         await client.send(payload)
 
 app.state.broadcast = broadcast
@@ -65,7 +62,7 @@ class Client:
         del self  # Not sure if this helps, in case Python doesn't GC
 
     async def send(self, payload: dict) -> None:
-        if self.websocket.client_state != WebSocketState.CONNECTED:
+        if self.websocket.application_state != WebSocketState.CONNECTED:
             return
 
         try:
@@ -159,7 +156,7 @@ async def connect_endpoint(
     await app.state.broadcast({"type": "message", "data": {"message": f"{client.username} has joined the server."}})
 
     # Handle loop
-    while websocket.client_state == WebSocketState.CONNECTED:
+    while websocket.application_state == WebSocketState.CONNECTED:
         match await client.receive():
             case {"type": "message", "data": {"message": message}}:
                 await app.state.broadcast({"type": "message", "data": {"user": client.serialize(), "message": message}})

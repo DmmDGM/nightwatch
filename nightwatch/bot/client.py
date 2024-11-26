@@ -100,11 +100,10 @@ class Context:
             self.user = user
 
     async def send(self, message: str) -> None:
-        await self.state.socket.send("PENIS!!")
-        await self.state.socket.send(orjson.dumps({"type": "message", "data": {"message": message}}))
+        await self.state.socket.send(orjson.dumps({"type": "message", "data": {"message": message}}), text = True)
 
     async def reply(self, message: str) -> None:
-        await self.send(f"[↑ {self.user.name}] {message}")
+        await self.send(f"[↑ {self.message.user.name}] {message}")
 
     def __repr__(self) -> str:
         return f"<Context rics={self.rics} message={getattr(self, 'message', None)} user={getattr(self, 'user', None)}>"
