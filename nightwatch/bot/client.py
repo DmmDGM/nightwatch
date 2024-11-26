@@ -36,9 +36,10 @@ class User:
     name: str
     hex: str
     admin: bool
+    bot: bool
 
     def __repr__(self) -> str:
-        return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin}>"
+        return f"<User name='{self.name}' hex='{self.hex}' admin={self.admin} bot={self.bot}>"
 
 @dataclass
 class Message:
@@ -149,7 +150,8 @@ class Client:
                 f"http{protocol}://{host}:{port}/api/join",
                 json = {
                     "username": username,
-                    "hex": hex
+                    "hex": hex,
+                    "bot": True
                 },
                 timeout = 5
             )

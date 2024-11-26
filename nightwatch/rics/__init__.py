@@ -47,15 +47,17 @@ app.state.broadcast = broadcast
 class Client:
     def __init__(self, websocket: WebSocket, user_data) -> None:
         self.websocket = websocket
-        self.username, self.hex_code, self.admin = user_data["username"], user_data["hex"], False
+        self.username, self.hex_code = user_data["username"], user_data["hex"]
 
-        self._callback = None
+        # Attributes
+        self.admin, self.bot = False, user_data["bot"]
 
         # Attach to client list
+        self._callback = None
         app.state.clients[self.username] = self
 
     def serialize(self) -> dict[str, str | bool]:
-        return {"name": self.username, "hex": self.hex_code, "admin": self.admin}
+        return {"name": self.username, "hex": self.hex_code, "admin": self.admin, "bot": self.bot}
 
     def cleanup(self) -> None:
         del app.state.clients[self.username]
@@ -100,6 +102,7 @@ class Client:
 class ClientJoinModel(BaseModel):
     username: str = Field(..., min_length = 3, max_length = 30)
     hex: str = Field(..., min_length = 6, max_length = 6, pattern = "^[0-9A-Fa-f]{6}$")
+    bot: bool = False
 
 @app.post("/api/join")
 async def route_index(client: ClientJoinModel) -> JSONResponse:
