@@ -9,8 +9,8 @@ class NextgenerationBot(Client):
         super().__init__()
 
     # Handle events
-    # async def on_message(self, ctx) -> None:
-        # print(f"Connected to '{ctx.rics.name}' as {self.user.name}!")
+    async def on_message(self, ctx) -> None:
+        print(f"Connected to '{ctx.rics.name}'!")
 
 NextgenerationBot().run(
     username = "Next-gen Bot",
