@@ -13,7 +13,9 @@ from .types import from_dict, User, Message, RicsInfo
 
 # Exceptions
 class AuthorizationFailed(Exception):
-    pass
+    def __init__(self, message: str, json: dict | None = None) -> None:
+        super().__init__(message)
+        self.json = json
 
 # Handle state
 class ClientState:
@@ -64,6 +66,12 @@ class Client:
         self.__state = ClientState()
         self.__session = requests.Session()
 
+        # Public attributes (provided just for the hell of it)
+        self.user: User | None = None
+        """The current user this client is connected as."""
+        self.address: str | None = None
+        """The address this client is connected to."""
+
     # Events (for overwriting)
     async def on_connect(self, ctx: Context) -> None:
         """Listen to the :connect: event."""
@@ -105,12 +113,12 @@ class Client:
             # Handle payload
             payload = response.json()
             if payload["code"] != 200:
-                raise AuthorizationFailed(response)
+                raise AuthorizationFailed("Connection failed!", payload)
 
             return host, int(port), f"ws{protocol}://", payload["authorization"]
 
-        except requests.RequestException:
-            raise AuthorizationFailed("Connection failed!")
+        except requests.RequestException as e:
+            raise AuthorizationFailed("Connection failed!", e.response.json() if e.response is not None else None)
 
     async def __match_event(self, event: dict[str, typing.Any]) -> None:
         match event:
@@ -129,6 +137,9 @@ class Client:
 
             case {"type": "join", "data": payload}:
                 user = from_dict(User, payload["user"])
+                if user == self.user:
+                    return
+
                 self.__state.user_list.append(user)
                 await self.on_join(Context(self.__state, user = user))
 
@@ -137,15 +148,21 @@ class Client:
                 self.__state.user_list.remove(user)
                 await self.on_leave(Context(self.__state, user = user))
 
-    async def __event_loop(self, username: str, hex: str, address: str) -> None:
+    async def event_loop(self, username: str, hex: str, address: str) -> None:
         """Establish a connection and listen to websocket messages.
         This method shouldn't be called directly, use :Client.run: instead."""
 
         host, port, protocol, auth = await self.__authorize(username, hex, address)
+        self.user, self.address = User(username, hex, False, True), address
+
         async with connect(f"{protocol}{host}:{port}/api/ws?authorization={auth}") as socket:
             self.__state.socket = socket
             while socket.state == 1:
                 await self.__match_event(orjson.loads(await socket.recv()))
+
+    async def close(self) -> None:
+        """Closes the websocket connection."""
+        await self.__state.socket.close()
 
     def run(
         self,
@@ -160,4 +177,4 @@ class Client:
           :hex:      (str) -- the hex color code to connect with
           :address:  (str) -- the FQDN to connect to
         """
-        asyncio.run(self.__event_loop(username, hex, address))
+        asyncio.run(self.event_loop(username, hex, address))
