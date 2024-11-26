@@ -59,16 +59,16 @@ class Client:
         self.__session = requests.Session()
 
     # Events (for overwriting)
-    async def on_connect(self, _) -> None:
+    async def on_connect(self, ctx: Context) -> None:
         pass
 
-    async def on_message(self, _) -> None:
+    async def on_message(self, ctx: Context) -> None:
         pass
 
-    async def on_join(self, _) -> None:
+    async def on_join(self, ctx: Context) -> None:
         pass
 
-    async def on_leave(self, _) -> None:
+    async def on_leave(self, ctx: Context) -> None:
         pass
 
     # Handle running
@@ -114,7 +114,7 @@ class Client:
                 message = from_dict(Message, payload)
 
                 # Propagate
-                await self.on_message(Context(self.__state, message))
+                await self.on_message(Context(self.__state, message = message, user = message.user))
                 self.__state.chat_logs.append(message)
 
             case {"type": "join", "data": payload}:

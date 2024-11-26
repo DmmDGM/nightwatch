@@ -1,16 +1,15 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
-from nightwatch.bot import Client
+from nightwatch.bot import Client, Context
 
 # Create client
 class NextgenerationBot(Client):
-    def __init__(self) -> None:
-        super().__init__()
-
-    # Handle events
-    async def on_message(self, ctx) -> None:
+    async def on_connect(self, ctx: Context) -> None:
         print(f"Connected to '{ctx.rics.name}'!")
+
+    async def on_message(self, ctx: Context) -> None:
+        print(f"{ctx.user.name} sent '{ctx.message.message}'")
 
 NextgenerationBot().run(
     username = "Next-gen Bot",
