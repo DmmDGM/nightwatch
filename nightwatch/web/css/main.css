@@ -103,8 +103,8 @@ input:hover {
     padding-top: 5px;
     padding-bottom: 5px;
 }
-.message-content > img {
-    max-width: 640px;
+.message-content > a > img {
+    max-width: 500px;
 }
 .timestamp {
     margin-left: auto;
